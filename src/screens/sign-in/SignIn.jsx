@@ -1,4 +1,4 @@
-import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link } from "@mui/material";
+import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link, FormControl } from "@mui/material";
 import { useState } from "react";
 import { getApi, signInByEmailAndPassword } from "../../api/api";
 
@@ -20,21 +20,30 @@ export const SignIn = () => {
             password: null,
             signInFailMessage: null,
         });
+        let _error = {
+            email: null,
+            password: null,
+            signInFailMessage: null,
+        };
 
+        
         if (email.length === 0) {
             hasError = true;
-            setError({
-                ...error,
+            _error = {
+                ..._error,
                 email: 'Email is required',
-            });
+            }
         }
+
         if (password.length === 0) {
             hasError = true;
-            setError({
-                ...error,
+            _error  = {
+                ..._error,
                 password: 'Password is required',
-            })
+            }
         }
+
+        setError(_error);
 
         return !hasError;
     }
@@ -52,17 +61,22 @@ export const SignIn = () => {
     }
 
     return (
-        <Box component="form" maxWidth={400} margin="auto">
+        <Box component="form" data-testid="sign-in" id="sign-in" maxWidth={400} margin="auto">
             <Stack direction="column" justifyContent="center" alignItems="center">
                 <h1 className="text-center">Sign in</h1>
 
                 <TextField margin="normal" fullWidth label="Email" variant="outlined"
+                    placeholder="Email"
+                    name="email"
                     required
                     onChange={(e) => setEmail(e.target.value)}
                     error={error.email != null}
                     helperText={error.email} />
 
                 <TextField margin="normal" fullWidth label="Password" variant="outlined"
+                    placeholder="Password"
+                    name="password"
+                    type="password"
                     required
                     onChange={(e) => setPassword(e.target.value)}
                     error={error.password != null}
@@ -75,8 +89,7 @@ export const SignIn = () => {
                     </Box>
                     }
                 </Box>
-
-                <Button fullWidth type="button" variant="contained" onClick={signInSubmit}>Sign In</Button>
+                <Button data-testid="btn-submit" fullWidth type="button" variant="contained" onClick={signInSubmit}>Sign In</Button>
                 <Stack width="100%" direction="row" justifyContent="end">
                     <Link mt={1} align="left" href="#">Don't have an account? Sign Up</Link>
                 </Stack>

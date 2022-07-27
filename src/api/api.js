@@ -26,24 +26,47 @@ export const signInByEmailAndPassword = async (email, password) => {
     } catch (error) {
         return {
             status: 'error',
-            errorMessage: 'You have entered an invalid username or password',
+            errorMessage: 'You have entered an incorrect username or password',
         }
     }
 }
 
-const fetchSuggestionsController = new AbortController();
-export const fetchSuggestions = async (search = '') => {
+export const fetchPlaceTypesApi = async () => {
+    const api = getApi();
+    const resposne = await api.get('place-types');
+    return resposne.data;
+}
+
+let fetchSuggestionsController = null;
+
+export const fetchSuggestionsApi = async (q = '') => {
     // cancel the previous request
-    fetchSuggestionsController.abort();
+    if (fetchSuggestionsController !== null) {
+        fetchSuggestionsController.abort();
+    }
+    fetchSuggestionsController = new AbortController();
+
     try {
         const api = getApi();
-        await Promise.resolve().then((resolve, reject) => setTimeout(resolve, Math.random() * 500))
-        console.log('response data');
-        // const response = await api.get(`/suggestions?s=${search}`, {
-        //     signal: fetchSuggestionsController.signal,
-        // });
-        // return ['a', 'b', 'c']
+        const response = await api.get(`/suggestions?q=${q}`, {
+            signal: fetchSuggestionsController.signal,
+        });
+        fetchSuggestionsController = null;
+        console.log(`fetch suggestion for q=${q} was responsed!`);
+        return response.data;
     } catch (e) {
-        console.log(e.toJson());
+        if (axios.isCancel(e)) {
+            console.log(`fetch suggestion for q=${q} was cancelled!`);
+        }
+        return [];
     }
+}
+
+export const createPlaceTypeNameApi = async (type = '', name = '') => {
+    const api = getApi();
+    const response = await api.post('/place', {
+        placeType: type,
+        placeName: name,
+    });
+    return response;
 }

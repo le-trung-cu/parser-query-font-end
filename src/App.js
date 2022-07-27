@@ -5,7 +5,7 @@ import { AddPlaceType } from './screens/add-place-type/AddPlaceType';
 function App() {
   return (
     <div>
-      <SignIn />
+      <AddPlaceType/>
     </div>
   );
 }

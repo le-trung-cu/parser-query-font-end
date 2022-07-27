@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-const { worker } = require('./mocks/handlers')
+const { worker } = require('./mocks/browser.js')
 worker.start({
   serviceWorker: {
     url: '/mockServiceWorker.js'
