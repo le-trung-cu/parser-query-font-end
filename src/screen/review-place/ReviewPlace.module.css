@@ -1,0 +1,18 @@
+.titleReview {
+    display: flex;
+    justify-content: center;
+}
+
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td,
+th {
+    border: 1px solid;
+}
+
+.headerTabel {
+    background-color: rgb(183, 183, 184);
+}

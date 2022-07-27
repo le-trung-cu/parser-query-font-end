@@ -1,0 +1,16 @@
+.titleAdd {
+    display: flex;
+    justify-content: center;
+}
+
+.boxSelect {
+    padding-top: 10px;
+}
+
+.boxText {
+    padding-top: 20px;
+}
+
+.button {
+    padding-top: 20px;
+}
