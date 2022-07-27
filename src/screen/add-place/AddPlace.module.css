@@ -14,3 +14,8 @@
 .button {
     padding-top: 20px;
 }
+.lognOut{
+    position: fixed;
+    top: 5px;
+    right: 10px;
+}

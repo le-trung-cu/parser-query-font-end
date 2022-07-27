@@ -11,6 +11,7 @@ import Grid from '@mui/material/Grid';
 import { Link } from "react-router-dom";
 import style from './SignIn.module.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router';
 
 const SignIn = () => {
 
@@ -27,17 +28,20 @@ const SignIn = () => {
     }
     const handleApi = () => {
         console.log(email, password)
-        axios.post('/https://reqres.in/api/login',{
+        axios.post('https://reqres.in/api/login',{
             email: email,
             password: password
         })
         .then(result => {
-            console.log(result)
+            console.log(result.data)
+            navigate("/addPlace")
         })
         .catch(error => {
             console.log(error)
+            alert('Error')
         })
     }
+    const navigate = useNavigate();
     return (
         <Container component="main" maxWidth="xs">
             <CssBaseline />

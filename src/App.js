@@ -14,6 +14,7 @@ function App() {
         <Routes>
           <Route exact path="/" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
+          <Route path ="/addPlace" element={<AddPlace/>} />
         </Routes>
       </BrowserRouter>
     </div>

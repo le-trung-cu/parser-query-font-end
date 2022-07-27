@@ -8,10 +8,14 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import { Link } from "react-router-dom";
 import style from './AddPlace.module.css'
 const AddPlace = () => {
     return (
         <Container component="main" maxWidth="xs">
+            <Link to="/">
+                <Typography className={style.lognOut}>Logn out</Typography>
+            </Link>
             <Typography className={style.titleAdd} component="h1" variant="h5">
                 Add place type name
             </Typography>
@@ -43,6 +47,7 @@ const AddPlace = () => {
                 </Grid>
             </Box>
         </Container>
+        
     )
 }
 
