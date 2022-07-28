@@ -1,6 +1,6 @@
 import { rest } from 'msw';
 
-const placeTypeNamesUserSubmited = [
+const placeNamesUserSubmited = [
     { name: 'Xe cộ', placeType: 'car' },
     { name: 'Đại lý xe oto', placeType: 'car_dealer' },
     { name: 'Đại lý xe máy', placeType: 'motorcycle_dealer' },
@@ -38,8 +38,13 @@ export const handlers = [
     }),
 
     rest.get('/suggestions', async (req, res, ctx) => {
-        const placeTypeNames = placeTypeNamesUserSubmited.filter(t => t.name.toLowerCase().indexOf(req.url.searchParams.get('q').toLowerCase()) >= 0);
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 1500))
-        return res(ctx.status(200), ctx.json(placeTypeNames));
+        const placeNames = placeNamesUserSubmited
+            .filter(t => t.name.toLowerCase().indexOf(req.url.searchParams.get('q').toLowerCase()) >= 0);
+        const exist = placeNamesUserSubmited
+            .findIndex(t => t.name.toLowerCase() === req.url.searchParams.get('q').toLowerCase()) >= 0;
+
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+
+        return res(ctx.status(200), ctx.json({ placeNames, exist}));
     }),
 ]

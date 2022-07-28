@@ -16,7 +16,6 @@ describe('AddPlaceType test', () => {
         server.close();
     })
 
-
     it('render a form', () => {
         render(<AddPlaceType />);
         const form = screen.getByTestId('add-place-type-form');

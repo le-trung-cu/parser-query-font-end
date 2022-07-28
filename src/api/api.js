@@ -39,7 +39,7 @@ export const fetchPlaceTypesApi = async () => {
 
 let fetchSuggestionsController = null;
 
-export const fetchSuggestionsApi = async (q = '') => {
+export const fetchPlaceNameSuggestionsApi = async (q = '') => {
     // cancel the previous request
     if (fetchSuggestionsController !== null) {
         fetchSuggestionsController.abort();
@@ -58,11 +58,11 @@ export const fetchSuggestionsApi = async (q = '') => {
         if (axios.isCancel(e)) {
             console.log(`fetch suggestion for q=${q} was cancelled!`);
         }
-        return [];
+        throw e;
     }
 }
 
-export const createPlaceTypeNameApi = async (type = '', name = '') => {
+export const createPlaceNameApi = async (type = '', name = '') => {
     const api = getApi();
     const response = await api.post('/place', {
         placeType: type,
