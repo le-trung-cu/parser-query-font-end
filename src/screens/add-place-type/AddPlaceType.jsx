@@ -1,17 +1,29 @@
 import { Box, Stack, InputLabel, TextField, Button, Autocomplete } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchPlaceTypesApi, fetchPlaceNameSuggestionsApi } from "../../api/api";
+import { fetchPlaceTypesApi, fetchPlaceNameSuggestionsApi, createPlaceNameApi } from "../../api/api";
 import { API_STATUS } from "../../api/api-status";
 
-const useFetchPlaceTypes = () => {
-    const [placeTypes, setPlaceTypes] = useState([]);
+const useApiStatus = () => {
+
     const [fetchStatus, setFetchStatus] = useState(API_STATUS.IDLE);
+
     const statuses = useMemo(() => ({
         isIdle: fetchStatus === API_STATUS.IDLE,
         isPending: fetchStatus === API_STATUS.PENDING,
         isSuccess: fetchStatus === API_STATUS.SUCCESS,
         isError: fetchStatus === API_STATUS.ERROR,
     }), [fetchStatus])
+
+    return {
+        fetchStatus,
+        setFetchStatus,
+        statuses,
+    }
+}
+
+const useFetchPlaceTypes = () => {
+    const [placeTypes, setPlaceTypes] = useState([]);
+    const { fetchStatus, setFetchStatus, statuses } = useApiStatus();
 
     const initPlaceTypes = async () => {
         setFetchStatus(API_STATUS.PENDING);
@@ -35,14 +47,7 @@ const useFetchPlaceTypes = () => {
 const useFetchPlaceNameSuggestions = () => {
     const [placeNames, setPlaceNames] = useState([]);
     const [exist, setExist] = useState(false);
-    const [fetchStatus, setFetchStatus] = useState(API_STATUS.IDLE);
-
-    const statuses = useMemo(() => ({
-        isIdle: fetchStatus === API_STATUS.IDLE,
-        isPending: fetchStatus === API_STATUS.PENDING,
-        isSuccess: fetchStatus === API_STATUS.SUCCESS,
-        isError: fetchStatus === API_STATUS.ERROR,
-    }), [fetchStatus])
+    const { fetchStatus, setFetchStatus, statuses } = useApiStatus();
 
     const fetchPlaceNames = async (name = '') => {
         setFetchStatus(API_STATUS.PENDING);
@@ -71,18 +76,67 @@ const useFetchPlaceNameSuggestions = () => {
     }
 }
 
+const useCreatePlaceName = () => {
+    const { fetchStatus, setFetchStatus, statuses } = useApiStatus();
+
+    const createPlaceName = async (placeType, name) => {
+        setFetchStatus(API_STATUS.PENDING);
+        try {
+            await createPlaceNameApi(placeType, name);
+            setFetchStatus(API_STATUS.SUCCESS);
+        } catch (error) {
+            setFetchStatus(API_STATUS.ERROR);
+        }
+    }
+    return {
+        createPlaceName,
+        fetchStatus,
+        ...statuses,
+    }
+}
+
 export const AddPlaceType = () => {
     const { placeTypes: placeTypeOptions, initPlaceTypes, isPending: isLoadingPlaceType } = useFetchPlaceTypes();
     const { exist, placeNames, fetchPlaceNames, isPending: isLoadingPlaceNameSuggestions } = useFetchPlaceNameSuggestions();
+    const { createPlaceName, isPending: isPendingCreatePlaceName, isSuccess: isCreatePlaceNameSuccess } = useCreatePlaceName();
 
     const [selectedPlaceType, setSelectedPlaceType] = useState(null);
 
     const [placeName, setPlaceName] = useState('');
 
+    const [errors, setErrors] = useState({
+        placeType: null,
+        placeName: null,
+    });
 
     useEffect(() => {
         initPlaceTypes();
     }, [])
+
+    const handleSubmit = async () => {
+        // validate
+        let _errors = {
+            placeType: null,
+            placeName: null,
+        }
+        let hasError = false;
+        if (selectedPlaceType == null) {
+            hasError = true;
+            _errors.placeType = 'Place type field is required';
+        }
+        if (exist) {
+            hasError = true;
+        }
+        if (placeName.length === 0) {
+            hasError = true;
+            _errors.placeName = 'Place name field is required';
+        }
+        setErrors(_errors);
+        // post data
+        if (!hasError) {
+            await createPlaceName(selectedPlaceType.id, placeName);
+        }
+    }
 
     const fetchSuggestionTimeOutId = useRef(null);
     useEffect(() => {
@@ -111,6 +165,8 @@ export const AddPlaceType = () => {
                         onChange={(e, value) => setSelectedPlaceType(value)}
                         renderInput={(params) => (
                             <TextField {...params} variant="filled"
+                                error={errors.placeType !== null}
+                                helperText={errors.placeType ?? ' '}
                                 name="selectedPlaceType" />
                         )}
                     />
@@ -127,16 +183,22 @@ export const AddPlaceType = () => {
                         filterOptions={(option) => option}
                         renderInput={(params) => (
                             <TextField {...params} variant="filled"
-                                error={exist}
+                                error={exist || (errors.placeName != null)}
                                 value={placeName}
                                 onSelect={(e) => setPlaceName(e.target.value)}
                                 onChange={(e) => setPlaceName(e.target.value)}
-                                helperText={exist ? `${placeName} has existed in the database` : ' '} />
+                                helperText={exist ? `${placeName} has existed in the database` : (errors.placeName ?? ' ')} />
                         )}
                     />
                 </div>
 
-                <Button variant="outlined">Submit</Button>
+                {isCreatePlaceNameSuccess && (
+                    <div>create success</div>
+                )}
+
+                <Button variant="outlined" onClick={handleSubmit}>
+                    Submit
+                </Button>
             </Stack>
         </Box>
     );

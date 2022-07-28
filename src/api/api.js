@@ -62,11 +62,11 @@ export const fetchPlaceNameSuggestionsApi = async (q = '') => {
     }
 }
 
-export const createPlaceNameApi = async (type = '', name = '') => {
+export const createPlaceNameApi = async (placeType = '', name = '') => {
     const api = getApi();
-    const response = await api.post('/place', {
-        placeType: type,
-        placeName: name,
+    const response = await api.post('/place-name', {
+        placeType,
+        name,
     });
     return response;
 }
