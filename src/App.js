@@ -7,6 +7,7 @@ import SignIn from './screen/sign-in/SignIn'
 import SignUp from './screen/sign-up/SignUp'
 import AddPlace from "./screen/add-place/AddPlace";
 import ReviewPlace from "./screen/review-place/ReviewPlace";
+import ListPlace from "./screen/list-place/ListPlace";
 function App() {
   return (
     <div className="App">
@@ -15,6 +16,8 @@ function App() {
           <Route exact path="/" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path ="/addPlace" element={<AddPlace/>} />
+          <Route path ="/review" element={<ReviewPlace/>}/>
+          <Route path ="/list" element={<ListPlace/>}/>
         </Routes>
       </BrowserRouter>
     </div>
