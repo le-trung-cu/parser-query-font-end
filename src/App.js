@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
 } from "react-router-dom"; import './App.css';
+import { Fragment } from "react";
 import SignIn from './screen/sign-in/SignIn'
 import SignUp from './screen/sign-up/SignUp'
 import AddPlace from "./screen/add-place/AddPlace";
@@ -10,7 +11,7 @@ import ReviewPlace from "./screen/review-place/ReviewPlace";
 import ListPlace from "./screen/list-place/ListPlace";
 function App() {
   return (
-    <div className="App">
+    <Fragment >
       <BrowserRouter>
         <Routes>
           <Route exact path="/" element={<SignIn />} />
@@ -20,7 +21,7 @@ function App() {
           <Route path ="/list" element={<ListPlace/>}/>
         </Routes>
       </BrowserRouter>
-    </div>
+    </Fragment>
   );
 }
 

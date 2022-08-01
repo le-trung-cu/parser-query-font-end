@@ -18,43 +18,44 @@ const AddPlace = () => {
 
    ]
     return (
-        <Container component="main" maxWidth="xs">
-            <Link to="/">
-                <Typography className={style.lognOut}>Logn out</Typography>
-            </Link>
-            <Typography className={style.titleAdd} component="h1" variant="h5">
-                Add place type name
-            </Typography>
-            <Box component="form">
-                <Grid  className={style.boxSelect}>
-                    <Typography>Place type</Typography>
-                    <FormControl fullWidth>
-                        <Autocomplete
-                            options={options}
-                            renderInput={(params)=>
-                            <TextField
-                                {...params}
-                                label="Select"
-                                required
-                            />}
-                        />
-                    </FormControl>
-                </Grid>
-                <Grid  className={style.boxText}>
-                    <Typography>Place type name</Typography>
-                    <TextField
-                        fullWidth
-                        placeholder='Type email here'
-                        required
-                    >
-                    </TextField>
-                </Grid>
-                <Grid  className={style.boxText}>
-                    <Button type="submit" variant="contained">submit</Button>
-                </Grid>
-            </Box>
-        </Container>
-        
+        <div className={style.containerAdd}>
+            <Container component="main" maxWidth="xs" >
+                <Link to="/">
+                    <Typography className={style.lognOut}>Logn out</Typography>
+                </Link>
+                <Typography className={style.titleAdd} component="h1" variant="h5">
+                    Add place type name
+                </Typography>
+                <Box component="form">
+                    <Grid  className={style.boxSelect}>
+                        <Typography>Place type</Typography>
+                        <FormControl fullWidth>
+                            <Autocomplete
+                                options={options}
+                                renderInput={(params)=>
+                                <TextField
+                                    {...params}
+                                    label="Select"
+                                    required
+                                />}
+                            />
+                        </FormControl>
+                    </Grid>
+                    <Grid  className={style.boxText}>
+                        <Typography>Place type name</Typography>
+                        <TextField
+                            fullWidth
+                            placeholder='Type email here'
+                            required
+                        >
+                        </TextField>
+                    </Grid>
+                    <Grid  className={style.boxText}>
+                        <Button type="submit" variant="contained">submit</Button>
+                    </Grid>
+                </Box>
+            </Container>
+        </div>
     )
 }
 

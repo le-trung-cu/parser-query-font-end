@@ -43,64 +43,66 @@ const SignIn = () => {
     }
     const navigate = useNavigate();
     return (
-        <Container component="main" maxWidth="xs">
-            <CssBaseline />
-            <Box className={style.boxIn}>
-                <Typography component="h1" variant="h5">
-                    Sign In
-                </Typography>
-
-                <Box component="form" sx={{ mt: 1 }} onSubmit={handleSubmit}>
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        id="email"
-                        label="Email address"
-                        name="email"
-                        autoComplete="email"
-                        autoFocus
-                        type="email"
-                        value={email}
-                        onChange={handleEmail}
-                    />
-
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        name="password"
-                        label="Password"
-                        type="password"
-                        id="password"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={handlePassword}
-                    />
-                    <FormControlLabel
-                        control={<Checkbox value="remember" color="primary" />}
-                        label="Remember Me"
-                    />
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant='contained'
-                        sx={{ mt: 2, mb: 3 }}
-                        onClick={handleApi}
-                    >
+        <div className={style.containerSignIn}>
+            <Container component="main" maxWidth="xs">
+                <CssBaseline />
+                <Box className={style.boxIn}>
+                    <Typography component="h1" variant="h5">
                         Sign In
-                    </Button>
+                    </Typography>
 
-                    <Grid container>
-                        <Grid item >
-                            <Link to="/sign-up" variant='body2'>
-                                Don't have an account? Sign Up
-                            </Link>
+                    <Box component="form" sx={{ mt: 1 }} onSubmit={handleSubmit}>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="email"
+                            label="Email address"
+                            name="email"
+                            autoComplete="email"
+                            autoFocus
+                            type="email"
+                            value={email}
+                            onChange={handleEmail}
+                        />
+
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            type="password"
+                            id="password"
+                            autoComplete="current-password"
+                            value={password}
+                            onChange={handlePassword}
+                        />
+                        <FormControlLabel
+                            control={<Checkbox value="remember" color="primary" />}
+                            label="Remember Me"
+                        />
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant='contained'
+                            sx={{ mt: 2, mb: 3 }}
+                            onClick={handleApi}
+                        >
+                            Sign In
+                        </Button>
+
+                        <Grid container>
+                            <Grid item >
+                                <Link to="/sign-up" variant='body2'>
+                                    Don't have an account? Sign Up
+                                </Link>
+                            </Grid>
                         </Grid>
-                    </Grid>
+                    </Box>
                 </Box>
-            </Box>
-        </Container>
+            </Container>
+        </div>
     )
 }
 

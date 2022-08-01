@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import style from './ReviewPlace.module.css'
 import { Box } from '@mui/system';
 
-function createData(category, name, source, approve, discard) {
+const createData = (category, name, source, approve, discard) => {
   return { category, name, source, approve, discard };
 }
 
@@ -16,12 +16,10 @@ const rows = [
 const ReviewPlace = () => {
   const [rowsPerPage, setRowsPerPage] = useState()
   return (
-    <Container component="main" maxWidth="xs">
-      <Typography className={style.titleReview} component="h1" variant="h5">
-        Review place types
-      </Typography>
-      <Box fullWidth >
-        <table className={style.table} >
+    <Container component="main" fullWidth>
+      <Typography className={style.titleReview} component="h1" variant="h5"> Review place types</Typography>
+      <Box className={style.boxReview}>
+        <table className={style.tableReview} >
           <tr className={style.headerTabel}>
             <th>Place type category</th>
             <th>Place type name</th>
@@ -38,8 +36,8 @@ const ReviewPlace = () => {
                 <td>{row.discard}</td>
               </tr>
             ))}
-            <tr>
-              <td colSpan={5} />
+            <tr className={style.trEnd}>
+              <td colSpan={5} ></td>
             </tr>
           </tbody>
         </table>

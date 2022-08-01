@@ -1,19 +1,25 @@
 .titleReview {
     display: flex;
     justify-content: center;
+    margin-top: 20px;
 }
-
-.table {
+.boxReview{
+    
+    margin-top: 20px;
+}
+.tableReview{
     border-collapse: collapse;
     width: 100%;
 }
-
 td,
 th {
     border: 1px solid;
-    padding: 5px;
+    text-align: center;
 }
 
 .headerTabel {
     background-color: rgb(183, 183, 184);
+}
+.trEnd{
+    height: 30px;
 }
