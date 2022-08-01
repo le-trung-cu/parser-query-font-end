@@ -43,14 +43,22 @@ export const handlers = [
         const exist = placeNamesUserSubmited
             .findIndex(t => t.name.toLowerCase() === req.url.searchParams.get('q').toLowerCase()) >= 0;
 
-        // await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 1500));
 
         return res(ctx.status(200), ctx.json({ placeNames, exist }));
     }),
 
     rest.post('/place-name', async (req, res, ctx) => {
         const { placeType, name } = await req.json();
+        const exist = placeNamesUserSubmited.findIndex(t => t.name.toLowerCase() === name.toLowerCase()) >= 0;
+        if (exist) {
+            return res(ctx.status(400), ctx.json({
+                hasError: true,
+                errorMessage: `${name} has exist in the database.`
+            }));
+        }
         placeNamesUserSubmited.push({ name: name, placeType });
+
         return res(ctx.status(201));
     })
 ]
