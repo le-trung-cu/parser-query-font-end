@@ -2,19 +2,30 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+import { ProvideAuth } from './hooks/use-auth';
+
 // import reportWebVitals from './reportWebVitals';
 
-const { worker } = require('./mocks/browser.js')
-worker.start({
-  serviceWorker: {
-    url: '/mockServiceWorker.js'
-  }
-})
+function mockServer() {
+  const { worker } = require('./mocks/browser.js')
+  worker.start({
+    serviceWorker: {
+      url: '/mockServiceWorker.js'
+    }
+  })
+}
+
+// mockServer();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <ProvideAuth>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ProvideAuth>
   </React.StrictMode>
 );
 

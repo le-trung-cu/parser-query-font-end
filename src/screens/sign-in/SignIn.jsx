@@ -1,9 +1,10 @@
-import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link, FormControl } from "@mui/material";
+import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link } from "@mui/material";
 import { useState } from "react";
-import { getApi, signInByEmailAndPassword } from "../../api/api";
+import { signInByEmailAndPasswordApi } from "../../api/api";
+import { useAuth } from "../../hooks/use-auth";
 
 export const SignIn = () => {
-
+    const { signIn } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState({
@@ -26,7 +27,7 @@ export const SignIn = () => {
             signInFailMessage: null,
         };
 
-        
+
         if (email.length === 0) {
             hasError = true;
             _error = {
@@ -37,7 +38,7 @@ export const SignIn = () => {
 
         if (password.length === 0) {
             hasError = true;
-            _error  = {
+            _error = {
                 ..._error,
                 password: 'Password is required',
             }
@@ -49,14 +50,17 @@ export const SignIn = () => {
     }
 
     async function signInSubmit() {
+        // return;
         if (validate()) {
-            const signInResult = await signInByEmailAndPassword(email, password);
-            if (signInResult && signInResult.errorMessage) {
-                setError({
-                    ...error,
-                    signInFailMessage: signInResult.errorMessage,
-                });
-            }
+            signIn({ userNameOrEmailAddress: email, password });
+            // const signInResult = await signInByEmailAndPasswordApi({ userNameOrEmailAddress: email, password });
+            // console.log(signInResult);
+            // if (signInResult && signInResult.errorMessage) {
+            //     setError({
+            //         ...error,
+            //         signInFailMessage: signInResult.errorMessage,
+            //     });
+            // }
         }
     }
 

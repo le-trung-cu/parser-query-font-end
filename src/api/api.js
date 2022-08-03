@@ -1,10 +1,25 @@
 import axios from "axios"
 
+// export const URLS = {
+//     baseURL: 'https://localhost:44394/api/',
+//     placeTypes: 'app/place-type',
+//     place: 'app/place'
+// }
+
+export const URLS = {
+    baseURL: 'https://test-place.vimap.vn/api/',
+    signIn: 'account/login',
+    signUp: 'account/register',
+    placeTypes: 'app/place-type',
+    place: 'app/place'
+}
+
 export const getApi = () => {
     const axiosInstance = axios.create({
-        baseURL: '',
+        baseURL: URLS.baseURL,
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
     });
 
@@ -15,25 +30,32 @@ export const getApi = () => {
     }
 }
 
-export const signInByEmailAndPassword = async (email, password) => {
-    try {
-        const api = getApi();
-        const response = await api.post('/signin', { email, password });
-        if (response.status === 200) {
-            const { token } = response.data;
-            return null;
-        }
-    } catch (error) {
-        return {
-            status: 'error',
-            errorMessage: 'You have entered an incorrect username or password',
-        }
+export const signUpApi = async ({ userName, email, password }) => {
+    const api = getApi();
+    const response = await api.post(URLS.signUp, { userName, emailAddress: email, password, appName: '' });
+    if (response.status === 200) {
+        console.log('sign up was success!');
     }
+}
+
+export const signInByEmailAndPasswordApi = async ({ userNameOrEmailAddress, password, rememberMe = true }) => {
+    const api = getApi();
+    const response = await api.post(URLS.signIn, { userNameOrEmailAddress, password, rememberMe });
+    console.log(response);
+    if (response.status === 200) {
+        const { token } = response.data;
+        localStorage.setItem('token', token);
+        return
+    }
+}
+
+export const signOutApi = () => {
+    localStorage.removeItem('token');
 }
 
 export const fetchPlaceTypesApi = async () => {
     const api = getApi();
-    const resposne = await api.get('place-types');
+    const resposne = await api.get(URLS.placeTypes);
     return resposne.data;
 }
 
@@ -48,11 +70,11 @@ export const fetchPlaceNameSuggestionsApi = async (q = '') => {
 
     try {
         const api = getApi();
-        const response = await api.get(`/suggestions?q=${q}`, {
+        const response = await api.get(`${URLS.place}?filter=${q}`, {
             signal: fetchSuggestionsController.signal,
         });
+        console.log(response);
         fetchSuggestionsController = null;
-        console.log(`fetch suggestion for q=${q} was responsed!`);
         return response.data;
     } catch (e) {
         if (axios.isCancel(e)) {
@@ -64,9 +86,11 @@ export const fetchPlaceNameSuggestionsApi = async (q = '') => {
 
 export const createPlaceNameApi = async (placeType = '', name = '') => {
     const api = getApi();
-    const response = await api.post('/place-name', {
+    const response = await api.post(URLS.place, {
         placeType,
         name,
+        source: 'auto',
+        status: 0,
     });
     return response;
 }
