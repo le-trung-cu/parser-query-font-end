@@ -1,25 +1,40 @@
 .titleList{
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    margin: 30px 0 30px 0 !important;
 }
 .tableList{
-    border-collapse: collapse;
-    width: 100%;
+    border-collapse: collapse !important;
+    width: 100% !important;
 }
-td,
-th {
-    border: 1px solid;
-    text-align: center;
+.tablerow{
+    border: 1px solid !important;
 }
 .tableTitle{
     background-color: rgb(183, 183, 184);
 
 }
-.boxTable{
-    margin-top: 20px;
+.tableCell{
+    border: 1px solid !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    font-size: 17px !important;
 }
 .buttonExport{
     display: flex;
     justify-content: end;
+}
+button{
+    cursor: pointer;
+}
+.visuallyHidden{
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    top: 20px;
+    width: 1px
 }
