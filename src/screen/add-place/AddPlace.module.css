@@ -14,13 +14,15 @@
 .button {
     padding-top: 20px;
 }
-.lognOut{
+
+.lognOut {
     position: fixed;
     top: 5px;
     right: 10px;
 }
-.containerAdd{
+
+.containerAdd {
     height: 100vh;
     display: flex;
-    align-items: center;    
-  }
+    align-items: center;
+}

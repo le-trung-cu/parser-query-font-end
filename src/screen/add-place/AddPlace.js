@@ -10,13 +10,13 @@ import Button from '@mui/material/Button';
 import { Link } from "react-router-dom";
 import style from './AddPlace.module.css'
 const AddPlace = () => {
-   const options = [
-    { name:'car', label:'Xe cộ'},
-    { name:'car_dealer', label:'Đại lý xe oto'},
-    { name:'motorcycle_dealer', label:'Đại lý xe máy'},
-    { Name: 'bicycle_store', label:'Đại lý xe đạp'}
+    const options = [
+        { name: 'car', label: 'Xe cộ' },
+        { name: 'car_dealer', label: 'Đại lý xe oto' },
+        { name: 'motorcycle_dealer', label: 'Đại lý xe máy' },
+        { Name: 'bicycle_store', label: 'Đại lý xe đạp' }
 
-   ]
+    ]
     return (
         <div className={style.containerAdd}>
             <Container component="main" maxWidth="xs" >
@@ -27,21 +27,21 @@ const AddPlace = () => {
                     Add place type name
                 </Typography>
                 <Box component="form">
-                    <Grid  className={style.boxSelect}>
+                    <Grid className={style.boxSelect}>
                         <Typography>Place type</Typography>
                         <FormControl fullWidth>
                             <Autocomplete
                                 options={options}
-                                renderInput={(params)=>
-                                <TextField
-                                    {...params}
-                                    label="Select"
-                                    required
-                                />}
+                                renderInput={(params) =>
+                                    <TextField
+                                        {...params}
+                                        label="Select"
+                                        required
+                                    />}
                             />
                         </FormControl>
                     </Grid>
-                    <Grid  className={style.boxText}>
+                    <Grid className={style.boxText}>
                         <Typography>Place type name</Typography>
                         <TextField
                             fullWidth
@@ -50,7 +50,7 @@ const AddPlace = () => {
                         >
                         </TextField>
                     </Grid>
-                    <Grid  className={style.boxText}>
+                    <Grid className={style.boxText}>
                         <Button type="submit" variant="contained">submit</Button>
                     </Grid>
                 </Box>

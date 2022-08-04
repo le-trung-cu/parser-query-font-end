@@ -1,19 +1,23 @@
-.titleReview{
+.titleReview {
     display: flex;
     justify-content: center;
     margin: 30px 0 30px 0 !important;
 }
-.tableReview{
+
+.tableReview {
     border-collapse: collapse !important;
     width: 100% !important;
 }
-.tablerow{
+
+.tablerow {
     border: 1px solid !important;
 }
-.tableTitle{
+
+.tableTitle {
     background-color: rgb(183, 183, 184);
 }
-.tableCell{
+
+.tableCell {
     border: 1px solid !important;
     text-align: center !important;
     font-weight: bold !important;
