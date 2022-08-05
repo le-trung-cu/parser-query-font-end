@@ -44,3 +44,4 @@ export const useApi = (fn) => {
         error,
     }
 }
+

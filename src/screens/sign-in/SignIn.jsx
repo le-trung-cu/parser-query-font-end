@@ -1,6 +1,5 @@
-import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link } from "@mui/material";
+import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link, Alert } from "@mui/material";
 import { useState } from "react";
-import { signInByEmailAndPasswordApi } from "../../api/api";
 import { useAuth } from "../../hooks/use-auth";
 
 export const SignIn = () => {
@@ -11,6 +10,7 @@ export const SignIn = () => {
         email: null,
         password: null,
         signInFailMessage: null,
+        summary: [],
     });
 
     function validate() {
@@ -50,27 +50,21 @@ export const SignIn = () => {
     }
 
     async function signInSubmit() {
-        // return;
         if (validate()) {
-            signIn({ userNameOrEmailAddress: email, password });
-            // const signInResult = await signInByEmailAndPasswordApi({ userNameOrEmailAddress: email, password });
-            // console.log(signInResult);
-            // if (signInResult && signInResult.errorMessage) {
-            //     setError({
-            //         ...error,
-            //         signInFailMessage: signInResult.errorMessage,
-            //     });
-            // }
+            const { error } = await signIn({ userNameOrEmailAddress: email, password });
+            if (error) {
+                setError((current) => ({ ...current, summary: [error.message] }))
+            }
         }
     }
 
     return (
-        <Box component="form" data-testid="sign-in" id="sign-in" maxWidth={400} margin="auto">
+        <Box component="form" data-testid="sign-in" id="sign-in" maxWidth={400} margin="auto" noValidate>
             <Stack direction="column" justifyContent="center" alignItems="center">
                 <h1 className="text-center">Sign in</h1>
 
-                <TextField margin="normal" fullWidth label="Email" variant="outlined"
-                    placeholder="Email"
+                <TextField margin="normal" fullWidth label="User name or Email" variant="outlined"
+                    placeholder="User name or Email"
                     name="email"
                     required
                     onChange={(e) => setEmail(e.target.value)}
@@ -93,6 +87,15 @@ export const SignIn = () => {
                     </Box>
                     }
                 </Box>
+                {error?.summary?.length > 0 && (
+                    <Box marginBottom={1}>
+                        <Alert severity="error" color="error">
+                            <ul>
+                                {error?.summary?.map(item => <li key={item}>{item}</li>)}
+                            </ul>
+                        </Alert>
+                    </Box>
+                )}
                 <Button data-testid="btn-submit" fullWidth type="button" variant="contained" onClick={signInSubmit}>Sign In</Button>
                 <Stack width="100%" direction="row" justifyContent="end">
                     <Link mt={1} align="left" href="#">Don't have an account? Sign Up</Link>

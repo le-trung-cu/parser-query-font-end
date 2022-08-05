@@ -1,16 +1,17 @@
-import React, { useState, useContext, createContext } from "react";
+import React, { useState, useContext, createContext, useEffect } from "react";
 import { signInByEmailAndPasswordApi, signOutApi, signUpApi } from "../api/api";
 
 const unAuthenticatedUser = {
     authenticated: false,
     userName: '',
+    roles: [],
     token: '',
+    id: ''
 };
 
 const authContext = createContext({
     user: unAuthenticatedUser,
-    signIn: () => { },
-    signUp: () => { },
+    signIn: async ({ userNameOrEmailAddress, password, rememberMe }) => { },
     signOut: () => { },
 });
 
@@ -29,26 +30,33 @@ export const useAuth = () => {
 
 // Provider hook that creates auth object and handles state
 function useProvideAuth() {
-    const [user, setUser] = useState(null);
-    // Wrap any Firebase methods we want to use making sure ...
-    // ... to save the user to state.
-    const signIn = async ({ userNameOrEmailAddress, password, rememberMe = true }) => {
-        setUser({ ...user, authenticated: true })
-        return;
-        const response = await signInByEmailAndPasswordApi({ userNameOrEmailAddress, password, rememberMe });
-        console.log(response);
-        setUser(response.user);
-        return response.user;
-    };
+    const [user, setUser] = useState(unAuthenticatedUser);
 
-    const signUp = async ({ userName, email, password }) => {
-        const response = await signUpApi({ userName, email, password });
-        setUser(response.user);
-        return response.user;
+    useEffect(() => {
+        const user = getUserFormToken();
+        if (user !== null) {
+            setUser(user);
+        }
+    }, []);
+
+    const signIn = async ({ userNameOrEmailAddress, password, rememberMe = true }) => {
+        const { data, error } = await signInByEmailAndPasswordApi({ userNameOrEmailAddress, password, rememberMe });
+        if (data?.result === 1) {
+            saveToken(data.token);
+            const user = getUserFormToken();
+            setUser(user);
+        } else if (data?.result === 2) {
+            return {
+                data,
+                error: {
+                    message: 'Invalid user name or password'
+                },
+            }
+        }
     };
 
     const signOut = () => {
-        signOutApi();
+        clearToken();
         setUser(unAuthenticatedUser);
     };
 
@@ -64,9 +72,47 @@ function useProvideAuth() {
     return {
         user,
         signIn,
-        signUp,
         signOut,
         sendPasswordResetEmail,
         confirmPasswordReset,
     };
 }
+
+function saveToken(token) {
+    token && localStorage.setItem('TOKEN_BEARER', token);
+}
+
+function getToken() {
+    return localStorage.getItem('TOKEN_BEARER') ?? null;
+}
+
+function clearToken() {
+    localStorage.removeItem('TOKEN_BEARER');
+}
+
+function getUserFormToken() {
+    const token = getToken();
+    if (token === null) {
+        return null;
+    }
+    const { exp, name, role, sub } = parseJwt(token);
+    return {
+        ...unAuthenticatedUser,
+        authenticated: true,
+        userName: name,
+        roles: [role],
+        token,
+        id: sub,
+        exp,
+    }
+}
+
+function parseJwt(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+};

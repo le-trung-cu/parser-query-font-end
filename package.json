@@ -15,7 +15,9 @@
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "react-transition-group": "^4.4.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "yup": "^0.32.11",
+    "yup-password": "^0.2.2"
   },
   "scripts": {
     "start": "react-scripts start",

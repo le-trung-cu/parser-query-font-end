@@ -1,162 +1,239 @@
-import { Box, Stack, InputLabel, TextField, Button, Autocomplete, Alert, CircularProgress } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { Box, Stack, InputLabel, TextField, Button, Autocomplete, Alert } from "@mui/material";
+import { useEffect, useReducer, useRef } from "react";
 import { fetchPlaceTypesApi, fetchPlaceNameSuggestionsApi, createPlaceNameApi } from "../../api/api";
-import { STATUS, useApi } from "../../hooks/use-api";
+import { LoadingIcon } from "../../components/LoadingIcon";
+import { IDLE, ERROR, PENDING, SUCCESS } from "../../hooks/use-api";
 
-const useFetchPlaceTypes = () => {
-    const { data, error: fetchPlaceTypesError, exce, status: fetchPlaceTypesStatus } = useApi(fetchPlaceTypesApi);
-    const [placeTypes, setPlaceTypes] = useState([]);
-
-    useEffect(() => {
-        exce();
-    }, [exce]);
-
-    useEffect(() => {
-        setPlaceTypes(data?.items ?? []);
-    }, [data])
-
-    return {
-        placeTypes,
-        fetchPlaceTypesStatus,
-        fetchPlaceTypesError,
+const initState = {
+    selectedPlaceType: null,
+    inputPlaceName: '',
+    inputPlaceNameExist: false,
+    placeTypeList: {
+        status: IDLE,
+        items: [],
+        totalCount: 0,
+        error: null,
+    },
+    placeNameList: {
+        status: IDLE,
+        items: [],
+        totalCount: 0,
+        error: null,
+    },
+    submitPlaceName: {
+        status: IDLE,
+        createdPlaceName: null,
+        error: null,
+    },
+    inputError: {
+        placeType: null,
+        placeName: null,
     }
 }
 
-const useFetchPlaceNameSuggestions = () => {
-    const [placeName, setPlaceName] = useState('');
-    const fetchSuggestionTimeOutId = useRef(null);
-    const [isPlaceNameExist, setIsPlaceNameExist] = useState(false);
+function reducer(state = initState, action) {
+    switch (action.type) {
+        case 'SET_SELECTED_PLACE_TYPE':
+            return {
+                ...state,
+                selectedPlaceType: action.payload
+            }
+        case 'SET_INPUT_PLACE_NAME':
+            return {
+                ...state,
+                inputPlaceName: action.payload
+            }
+        case 'FETCH_PLACE_TYPE_LIST':
+            switch (action.payload.status) {
+                case IDLE:
+                    return {
+                        ...state,
+                        placeTypeList: {
+                            ...state.placeType,
+                            status: IDLE,
+                        }
+                    }
+                case SUCCESS:
+                    return {
+                        ...state,
+                        placeTypeList: {
+                            ...state.placeType,
+                            status: SUCCESS,
+                            items: action.payload.items,
+                            totalCount: action.payload.totalCount,
+                        }
+                    }
+                case ERROR:
+                    return {
+                        ...state,
+                        placeTypeList: {
+                            ...state.placeType,
+                            status: ERROR,
+                        }
+                    }
+                case PENDING:
+                    return {
+                        ...state,
+                        placeTypeList: {
+                            ...state.placeType,
+                            status: PENDING,
+                        }
+                    }
+                default:
+                    break;
+            }
+            break;
+        case 'FETCH_PLACE_NAME_LIST':
+            switch (action.payload.status) {
+                case IDLE:
+                    return {
+                        ...state,
+                        placeNameList: {
+                            ...state.placeNameList,
+                            status: IDLE,
+                        }
+                    }
+                case PENDING:
+                    return {
+                        ...state,
+                        placeNameList: {
+                            ...state.placeNameList,
+                            status: PENDING,
+                        }
+                    }
+                case SUCCESS:
+                    // check input place name exist
+                    const inputPlaceNameExist = action.payload.items.findIndex(item => item.name.toLowerCase() === state.inputPlaceName.toLowerCase()) >= 0;
+                    return {
+                        ...state,
+                        inputPlaceNameExist,
+                        placeNameList: {
+                            ...state.placeNameList,
+                            status: SUCCESS,
+                            items: action.payload.items,
+                            totalCount: action.payload.totalCount,
+                        }
+                    }
+                case ERROR:
+                    return {
+                        ...state,
+                        placeNameList: {
+                            ...state.placeNameList,
+                            status: ERROR,
+                            error: action.payload.error,
+                        }
+                    }
+                default:
+                    break;
+            }
+            break;
+        case 'SUBMIT_PLACE_NAME':
+            switch (action.payload.status) {
+                case PENDING:
+                    return {
+                        ...state,
+                        submitPlaceName: {
+                            ...state.submitPlaceName,
+                            status: action.payload.status,
+                            error: null,
+                        }
+                    }
+                case SUCCESS:
+                    return {
+                        ...state,
+                        inputPlaceName: '',
+                        submitPlaceName: {
+                            ...state.submitPlaceName,
+                            status: action.payload.status,
+                            createdPlaceName: action.payload.createdPlaceName,
+                            error: null,
+                        }
+                    }
+                case ERROR:
+                    return {
+                        ...state,
+                        submitPlaceName: {
+                            ...state.submitPlaceName,
+                            status: action.payload.status,
+                            createdPlaceName: null,
+                            error: action.payload.error,
+                        }
+                    }
+                default:
+                    break;
+            }
+            break
+        case 'SET_INPUT_ERROR':
+            return {
+                ...state,
+                inputError: action.payload.error,
+            }
+        case 'RESET_INPUT_ERROR':
+            return {
+                ...state,
+                inputError: {
+                    placeType: '',
+                    placeName: '',
+                }
+            }
+        default:
+            return state;
+    }
+}
 
-    const {
-        data: suggestions,
-        error: fetchPlaceNameSuggestionsError,
-        exce,
-        status: fetchPlaceNameSuggestionsStatus,
-    } = useApi(fetchPlaceNameSuggestionsApi);
-
-    useEffect(() => {
-        if (placeName === null || placeName === undefined || placeName.length === 0)
-            return;
-
-        if (fetchSuggestionTimeOutId.current !== null) {
-            clearTimeout(fetchSuggestionTimeOutId.current);
-            fetchSuggestionTimeOutId.current = null;
-        }
-        fetchSuggestionTimeOutId.current = setTimeout(async () => {
-            await exce(placeName);
-            fetchSuggestionTimeOutId.current = null;
-        }, 300);
-    }, [exce, placeName]);
-
-    useEffect(() => {
-        const exist = suggestions?.items?.findIndex(({ name }) => name.toLowerCase() === placeName.trim().toLowerCase()) >= 0;
-        setIsPlaceNameExist(exist);
-    }, [placeName, suggestions]);
+function useAddPlaceTypeReducer() {
+    const [state, dispatch] = useReducer(reducer, initState);
 
     return {
-        placeName,
-        setPlaceName,
-        suggestions,
-        fetchPlaceNameSuggestionsError,
-        fetchPlaceNameSuggestionsStatus,
-        isPlaceNameExist,
+        state,
+        dispatchResetInputError: () => dispatch({ type: 'RESET_INPUT_ERROR', payload: {} }),
+        dispachSetInputError: (payload) => dispatch({ type: 'SET_INPUT_ERROR', payload }),
+        dispatchSubmitPlaceName: (payload) => dispatch({ type: 'SUBMIT_PLACE_NAME', payload }),
+        dispatchFetchPlaceTypeList: (payload) => dispatch({ type: 'FETCH_PLACE_TYPE_LIST', payload }),
+        dispatchFetchPlacenameList: (payload) => dispatch({ type: 'FETCH_PLACE_NAME_LIST', payload }),
+        dispatchInputPlaceName: (payload) => dispatch({ type: 'SET_INPUT_PLACE_NAME', payload }),
+        dispatchSelectedPlaceType: (payload) => dispatch({ type: 'SET_SELECTED_PLACE_TYPE', payload }),
     }
 }
 
 export const AddPlaceType = () => {
-    const { placeTypes: placeTypeOptions, fetchPlaceTypesStatus } = useFetchPlaceTypes();
     const {
-        placeName,
-        setPlaceName,
-        suggestions,
-        fetchPlaceNameSuggestionsStatus,
-        isPlaceNameExist,
-    } = useFetchPlaceNameSuggestions();
+        state,
+        dispatchResetInputError,
+        dispachSetInputError,
+        dispatchSubmitPlaceName,
+        dispatchFetchPlaceTypeList,
+        dispatchFetchPlacenameList,
+        dispatchInputPlaceName,
+        dispatchSelectedPlaceType,
+    } = useAddPlaceTypeReducer();
 
-    const { error: createPlaceNameError, exce: createPlaceName, status: createPlaceNameStatus } = useApi(createPlaceNameApi);
-
-    const [selectedPlaceType, setSelectedPlaceType] = useState(null);
-
-    const [createdPlaceName, setCreatedPlaceName] = useState('');
-
-    const [submitError, setSubmitError] = useState({
-        placeType: null,
-        placeName: null,
-    });
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (fetchPlaceNameSuggestionsStatus === STATUS.PENDING) {
-            return;
-        }
-        if (validate()) {
-            await createPlaceName(selectedPlaceType.id, placeName);
-        }
-    }
-
+    let fetchPlaceTypeNamesTimeoutId = useRef(null);
     useEffect(() => {
-        if(createPlaceNameStatus === STATUS.SUCCESS){
-            console.log('create place name success');
-            setCreatedPlaceName(placeName);
-            setPlaceName('');
-        }
-    }, [createPlaceNameStatus, setPlaceName])
-    
+        fetchPlaceTypes();
+    }, [])
 
-    const getHelperTextPlaceName = () => {
-        if (isPlaceNameExist && placeName?.length > 0) {
-            return `${placeName} has exist in the data base`;
-        }
-        if (submitError.placeName !== null) {
-            return submitError.placeName;
-        }
-        return ' ';
-    }
-
-    function validate() {
-        let _errors = {
-            placeType: null,
-            placeName: null,
-        }
-        let hasError = false;
-        if (selectedPlaceType == null) {
-            hasError = true;
-            _errors.placeType = 'Type field is required';
-        }
-        if (placeName === undefined || placeName === null || placeName.length === 0) {
-            hasError = true;
-            _errors.placeName = 'Name field is required';
-        }
-        if (isPlaceNameExist) {
-            hasError = true;
-        }
-        setSubmitError(_errors);
-        return !hasError;
-    }
-
-    const _placeNameShowCircularProgress = fetchPlaceNameSuggestionsStatus === STATUS.PENDING;
-    const _placeNameShowError = !_placeNameShowCircularProgress && isPlaceNameExist;
-    const _placeNameShowValidate = !_placeNameShowCircularProgress && !_placeNameShowError && placeName && placeName.length > 0
     return (
-        <Box data-testid="add-place-type-form" component="form" maxWidth={400} marginX="auto" noValidate
+        <Box data-testid="add-place-type-form" id="add-place-type-form" component="form" maxWidth={400} marginX="auto" noValidate
             onSubmit={handleSubmit}>
             <Stack direction="column" spacing={3}>
                 <h1>Add place type</h1>
                 <div>
+                    {state.selectedPlaceType}
                     <InputLabel id="place-type">Place type</InputLabel>
                     <Autocomplete
-                        loading={fetchPlaceTypesStatus === STATUS.PENDING}
+                        loading={state.placeNameList.status === PENDING}
                         data-testid="autocomplete-place-type"
                         id="place-type"
-                        options={placeTypeOptions ?? []}
+                        options={state.placeTypeList.items ?? []}
                         getOptionLabel={option => option.typeName}
                         isOptionEqualToValue={(option, value) => value !== null && option.type === value.type}
-                        onChange={(e, value) => setSelectedPlaceType(value)}
+                        onChange={(e, value) => dispatchSelectedPlaceType(value.type)}
                         renderInput={(params) => (
                             <TextField {...params} variant="filled"
                                 required
-                                error={submitError.placeType !== null}
-                                helperText={submitError.placeType ?? ' '}
+                                error={state.inputError.placeType?.length > 0}
+                                helperText={state.inputError.placeType}
                                 name="selectedPlaceType" />
                         )}
                     />
@@ -167,44 +244,115 @@ export const AddPlaceType = () => {
                     <Autocomplete
                         id="place-type-name"
                         freeSolo
-                        loading={fetchPlaceNameSuggestionsStatus === STATUS.PENDING}
-                        options={suggestions?.items?.map(option => option.name) ?? []}
-                        value={placeName}
-                        onChange={(e, newValue) => setPlaceName(newValue ?? '')}
-                        inputValue={placeName}
-                        onInputChange={(e, newInputValue) => setPlaceName(newInputValue ?? '')}
+                        loading={state.placeNameList.state === PENDING}
+                        options={state.placeNameList.items?.map(option => option.name) ?? []}
+                        value={state.inputPlaceName}
+                        onChange={handleInputPlaceNameChange}
+                        inputValue={state.inputPlaceName}
+                        onInputChange={handleInputPlaceNameChange}
                         filterOptions={(option) => option}
                         clearOnBlur={false}
+
                         renderInput={(params) => (
                             <Stack direction="row" alignItems="baseline" spacing={1}>
-                                <TextField {...params} variant="filled"
-                                    required
-                                    error={submitError.placeName !== null || isPlaceNameExist}
-                                    helperText={getHelperTextPlaceName()} />
-                                {_placeNameShowCircularProgress && <CircularProgress size={24} />}
-                                {_placeNameShowError && <svg width={24} height={24} color="red" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none"><path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11ZM5.25 8.25C5.25 7.83579 5.58579 7.5 6 7.5C6.41421 7.5 6.75 7.83579 6.75 8.25C6.75 8.66421 6.41421 9 6 9C5.58579 9 5.25 8.66421 5.25 8.25ZM5.50806 3.41012C5.55039 3.17688 5.75454 3 6 3C6.24546 3 6.44961 3.17688 6.49194 3.41012L6.5 3.5V6L6.49194 6.08988C6.44961 6.32312 6.24546 6.5 6 6.5C5.75454 6.5 5.55039 6.32312 5.50806 6.08988L5.5 6V3.5L5.50806 3.41012Z" fill="currentColor"></path></svg>}
-                                {_placeNameShowValidate && <svg width={24} height={24} color="green" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path></svg>}
+                                <TextField error={state.inputPlaceNameExist || state.inputError.placeName?.length > 0} {...params} variant="filled"
+                                    helperText={state.inputError.placeName}
+                                    required />
+                                <LoadingIcon loading={state.placeNameList.status === PENDING} delay={300}>
+                                    {state.inputPlaceNameExist && <svg width={24} height={24} color="red" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none"><path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11ZM5.25 8.25C5.25 7.83579 5.58579 7.5 6 7.5C6.41421 7.5 6.75 7.83579 6.75 8.25C6.75 8.66421 6.41421 9 6 9C5.58579 9 5.25 8.66421 5.25 8.25ZM5.50806 3.41012C5.55039 3.17688 5.75454 3 6 3C6.24546 3 6.44961 3.17688 6.49194 3.41012L6.5 3.5V6L6.49194 6.08988C6.44961 6.32312 6.24546 6.5 6 6.5C5.75454 6.5 5.55039 6.32312 5.50806 6.08988L5.5 6V3.5L5.50806 3.41012Z" fill="currentColor"></path></svg>}
+                                    {!state.inputPlaceNameExist && state.inputPlaceName?.length > 0 && <svg width={24} height={24} color="green" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path></svg>}
+                                </LoadingIcon>
+                                {/* {state.placeNameList.status === PENDING && <CircularProgress size={24} />}
+                                {state.placeNameList.status !== PENDING && state.inputPlaceNameExist && <svg width={24} height={24} color="red" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none"><path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11ZM5.25 8.25C5.25 7.83579 5.58579 7.5 6 7.5C6.41421 7.5 6.75 7.83579 6.75 8.25C6.75 8.66421 6.41421 9 6 9C5.58579 9 5.25 8.66421 5.25 8.25ZM5.50806 3.41012C5.55039 3.17688 5.75454 3 6 3C6.24546 3 6.44961 3.17688 6.49194 3.41012L6.5 3.5V6L6.49194 6.08988C6.44961 6.32312 6.24546 6.5 6 6.5C5.75454 6.5 5.55039 6.32312 5.50806 6.08988L5.5 6V3.5L5.50806 3.41012Z" fill="currentColor"></path></svg>}
+                                {state.placeNameList.status !== PENDING && !state.inputPlaceNameExist && state.inputPlaceName?.length > 0 && <svg width={24} height={24} color="green" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path></svg>} */}
+
                             </Stack>
                         )}
                     />
                 </div>
 
                 <Stack spacing={2}>
-                    {(createPlaceNameStatus === STATUS.ERROR) && (
+                    {(state.submitPlaceName.status === ERROR) && (
                         <Alert variant="filled" severity="error">
-                            {createPlaceNameError?.message}
+                            {state.submitPlaceName.error?.message}
                         </Alert>
                     )}
-                    {createPlaceNameStatus === STATUS.SUCCESS && createdPlaceName?.length > 0 && (
+                    {state.submitPlaceName.createdPlaceName && (
                         <Alert severity="success" color="info">
-                            {createdPlaceName} just added into the database.
+                            {state.submitPlaceName.createdPlaceName} just added into the database.
                         </Alert>)}
-                    <Button variant="contained" type="submit"
-                        disabled={fetchPlaceNameSuggestionsStatus === STATUS.PENDING}>
-                        Submit {placeName}
+                    <Button variant="contained" type="submit">
+                        Submit {state.inputPlaceName}
                     </Button>
+
                 </Stack>
             </Stack>
         </Box>
     );
+
+    function handleInputPlaceNameChange(event, newValue) {
+        dispatchInputPlaceName(newValue ?? '');
+        if (newValue && newValue.length > 0) {
+            fetchPlaceTypeNameSuggestionss(newValue);
+        }
+    }
+
+    function fetchPlaceTypeNameSuggestionss(name) {
+        dispatchFetchPlacenameList({ status: PENDING });
+        if (fetchPlaceTypeNamesTimeoutId.current !== null) {
+            clearTimeout(fetchPlaceTypeNamesTimeoutId.current);
+        }
+
+        fetchPlaceTypeNamesTimeoutId.current = setTimeout(async () => {
+            try {
+                const { items = [], totalCount = 0 } = await fetchPlaceNameSuggestionsApi(name);
+                dispatchFetchPlacenameList({ status: SUCCESS, items, totalCount });
+            } catch (error) {
+                dispatchFetchPlacenameList({ status: ERROR });
+            }
+            fetchPlaceTypeNamesTimeoutId.current = null;
+        }, 300);
+    }
+
+    async function fetchPlaceTypes() {
+        dispatchFetchPlaceTypeList({ status: PENDING });
+        const { data: { items, totalCount }, error } = await fetchPlaceTypesApi();
+        if (error) {
+            dispatchFetchPlaceTypeList({ status: ERROR, error });
+        } else {
+            dispatchFetchPlaceTypeList({ status: SUCCESS, items, totalCount });
+        }
+    }
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        dispatchResetInputError()
+        const error = validate();
+        if (error) {
+            dispachSetInputError({ error });
+            return;
+        }
+        dispatchSubmitPlaceName({ status: PENDING });
+        const { data, error: responseError } = await createPlaceNameApi(state.selectedPlaceType, state.inputPlaceName);
+
+        if (responseError) {
+            dispatchSubmitPlaceName({ status: ERROR, error: responseError })
+        } else {
+            dispatchSubmitPlaceName({ status: SUCCESS, createdPlaceName: data.name });
+        }
+    }
+
+    function validate() {
+        let error = null;
+
+        if (state.selectedPlaceType === null) {
+            error = { ...error, placeType: 'Type field is required' };
+        }
+
+        if (state.inputPlaceName.trim().length === 0) {
+            error = { ...error, placeName: 'Name field is required' };
+        }
+        return error;
+    }
 }

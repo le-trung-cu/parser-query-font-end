@@ -22,13 +22,13 @@ describe('AddPlaceType test', () => {
         expect(form).toBeInstanceOf(HTMLFormElement);
     })
 
-    it('can fetch suggestion place type name', async () => {
+    it.skip('can fetch suggestion place type name', async () => {
 
         render(<AddPlaceType />);
 
         const autocomplete = screen.getByTestId('autocomplete-place-type');
         const input = within(autocomplete).getByRole('combobox');
-        fireEvent.change(input, { target: { value: 'Xe' } });
+        fireEvent.change(input, { target: { value: 'Xe cộ' } });
         await wait(1000);
         fireEvent.keyDown(autocomplete, { key: 'ArrowDown' });
         await wait();
