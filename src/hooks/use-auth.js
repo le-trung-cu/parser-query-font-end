@@ -11,7 +11,7 @@ const unAuthenticatedUser = {
 
 const authContext = createContext({
     user: unAuthenticatedUser,
-    signIn: async ({ userNameOrEmailAddress, password, rememberMe }) => { },
+    signIn: async ({ userNameOrEmailAddress, password, rememberMe }) => ({data: null,  error: null}),
     signOut: () => { },
 });
 
@@ -45,6 +45,7 @@ function useProvideAuth() {
             saveToken(data.token);
             const user = getUserFormToken();
             setUser(user);
+            return { data };
         } else if (data?.result === 2) {
             return {
                 data,

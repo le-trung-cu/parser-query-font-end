@@ -20,7 +20,7 @@ export const LoadingIcon = ({ loading, size = 24, delay = 300, children }) => {
 
     return (
         <>
-            {showLoading && <CircularProgress size={size} />}
+            {showLoading && <CircularProgress data-testid="loading-icon" size={size} />}
             {!showLoading && children}
         </>
     )

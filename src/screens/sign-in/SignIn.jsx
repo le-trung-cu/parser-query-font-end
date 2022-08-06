@@ -1,8 +1,10 @@
 import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link, Alert } from "@mui/material";
 import { useState } from "react";
 import { useAuth } from "../../hooks/use-auth";
+import { useNavigate } from "react-router-dom";
 
 export const SignIn = () => {
+    const navigate = useNavigate();
     const { signIn } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -16,17 +18,11 @@ export const SignIn = () => {
     function validate() {
 
         let hasError = false;
-        setError({
-            email: null,
-            password: null,
-            signInFailMessage: null,
-        });
         let _error = {
             email: null,
             password: null,
             signInFailMessage: null,
         };
-
 
         if (email.length === 0) {
             hasError = true;
@@ -51,9 +47,11 @@ export const SignIn = () => {
 
     async function signInSubmit() {
         if (validate()) {
-            const { error } = await signIn({ userNameOrEmailAddress: email, password });
+            const { data, error } = await signIn({ userNameOrEmailAddress: email, password });
             if (error) {
                 setError((current) => ({ ...current, summary: [error.message] }))
+            } else {
+                navigate('/');
             }
         }
     }
@@ -62,7 +60,6 @@ export const SignIn = () => {
         <Box component="form" data-testid="sign-in" id="sign-in" maxWidth={400} margin="auto" noValidate>
             <Stack direction="column" justifyContent="center" alignItems="center">
                 <h1 className="text-center">Sign in</h1>
-
                 <TextField margin="normal" fullWidth label="User name or Email" variant="outlined"
                     placeholder="User name or Email"
                     name="email"
@@ -82,17 +79,13 @@ export const SignIn = () => {
 
                 <Box marginBottom={3} width="100%">
                     <FormControlLabel control={<Checkbox defaultChecked />} label="Remember me" />
-                    {error.signInFailMessage && <Box color={'red'} marginY={1}>
-                        <span>{error.signInFailMessage}</span>
-                    </Box>
-                    }
                 </Box>
                 {error?.summary?.length > 0 && (
                     <Box marginBottom={1}>
                         <Alert severity="error" color="error">
-                            <ul>
-                                {error?.summary?.map(item => <li key={item}>{item}</li>)}
-                            </ul>
+                                {error?.summary?.map(item => <p key={item}>{item}</p>)}
+                            {/* <ul>
+                            </ul> */}
                         </Alert>
                     </Box>
                 )}

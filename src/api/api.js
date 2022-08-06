@@ -1,18 +1,12 @@
 import axios from "axios"
 
-// export const URLS = {
-//     baseURL: 'https://localhost:44394/api/',
-//     placeTypes: 'app/place-type',
-//     place: 'app/place'
-// }
-
 export const URLS = {
-    baseURL: 'https://test-place.vimap.vn/api/',
-    // baseURL: 'http://localhost:3000/',
-    signIn: 'app/login-token-result/login-get-token',
-    signUp: 'account/register',
-    placeTypes: 'app/place-type',
-    place: 'app/place'
+    // baseURL: 'https://test-place.vimap.vn/',
+    baseURL: '/',
+    signIn: 'api/app/login-token-result/login-get-token',
+    signUp: 'api/account/register',
+    placeTypes: 'api/app/place-type',
+    place: 'api/app/place'
 }
 
 export const getApi = () => {
@@ -69,7 +63,6 @@ export const fetchPlaceNameSuggestionsApi = async (q = '') => {
         const response = await api.get(`${URLS.place}?filter=${q}`, {
             signal: fetchSuggestionsController.signal,
         });
-        console.log(response);
         fetchSuggestionsController = null;
         return response.data;
     } catch (e) {
