@@ -42,6 +42,7 @@ export const useApi = (fn) => {
         data,
         status,
         error,
+        setData,
     }
 }
 

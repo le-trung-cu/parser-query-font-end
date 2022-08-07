@@ -1,12 +1,21 @@
 import axios from "axios"
 
 export const URLS = {
-    // baseURL: 'https://test-place.vimap.vn/',
-    baseURL: '/',
+    baseURL: 'https://test-place.vimap.vn/',
+    // baseURL: '/',
     signIn: 'api/app/login-token-result/login-get-token',
     signUp: 'api/account/register',
     placeTypes: 'api/app/place-type',
-    place: 'api/app/place'
+    place: 'api/app/place',
+    placeByStatus: 'api/app/place/by-status-type',
+}
+
+function urlEncodeQueryParams(data) {
+    if (data == null || data === undefined) return '';
+    const params = Object.keys(data).map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`);
+    // const params = Object.keys(data).map(key => data[key] ? `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}` : '');
+    const query = params.filter(value => !!value).join('&');
+    return query.length > 0 ? '?' + query : '';
 }
 
 export const getApi = () => {
@@ -76,4 +85,23 @@ export const fetchPlaceNameSuggestionsApi = async (q = '') => {
 export const createPlaceNameApi = async (placeType = '', name = '') => {
     const api = getApi();
     return await withAxiosApi(api.post, URLS.place, { placeType, name });
+}
+
+export const fetchPlaceNamesApi = async (parameters = { filter: '', sorting: '', skipCount: 0, maxResultCount: 50 }) => {
+    const api = getApi();
+    const  response = await api.get(URLS.place + urlEncodeQueryParams(parameters));
+    return response.data;
+}
+
+export const fetchPlaceNamesByStatusApi = async (parameters = { filter: '', sorting: '', skipCount: 0, maxResultCount: 50 , statusType: 0}) => {
+    const api = getApi();
+    const  response = await api.get(URLS.placeByStatus + urlEncodeQueryParams(parameters));
+    return response.data;
+}
+
+export const updatePlaceNameStatusApi = async (id, statusType) => {
+    const api = getApi();
+    const response = await api.put(`${URLS.place}/${id}?statusType=${statusType}`);
+    console.log('data...........', response.data);
+    return response.data;
 }

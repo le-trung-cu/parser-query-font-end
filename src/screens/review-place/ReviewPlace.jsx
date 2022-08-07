@@ -1,383 +1,391 @@
-import * as React from 'react';
+import { useState, useEffect, PureComponent, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
+import clsx from 'clsx';
+import { styled } from '@mui/material/styles';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-// import DeleteIcon from '@mui/icons-material/Delete';
-// import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
+import { AutoSizer, Column, Table } from 'react-virtualized';
+import { PENDING, useApi } from '../../hooks/use-api';
+import { fetchPlaceNamesApi, fetchPlaceNamesByStatusApi } from '../../api/api';
+import { StatusButton } from './StatusButton';
+import { Chip, FormControl, InputLabel, MenuItem, Pagination, Select, Stack, Box } from '@mui/material';
 
-function createData(name, calories, fat, carbs, protein) {
-    return {
-        name,
-        calories,
-        fat,
-        carbs,
-        protein,
+const classes = {
+    flexContainer: 'ReactVirtualizedDemo-flexContainer',
+    tableRow: 'ReactVirtualizedDemo-tableRow',
+    tableRowHover: 'ReactVirtualizedDemo-tableRowHover',
+    tableCell: 'ReactVirtualizedDemo-tableCell',
+    noClick: 'ReactVirtualizedDemo-noClick',
+};
+
+const styles = ({ theme }) => ({
+    // temporary right-to-left patch, waiting for
+    // https://github.com/bvaughn/react-virtualized/issues/454
+    '& .ReactVirtualized__Table__headerRow': {
+        ...(theme.direction === 'rtl' && {
+            paddingLeft: '0 !important',
+        }),
+        ...(theme.direction !== 'rtl' && {
+            paddingRight: undefined,
+        }),
+    },
+    [`& .${classes.flexContainer}`]: {
+        display: 'flex',
+        alignItems: 'center',
+        boxSizing: 'border-box',
+    },
+    [`& .${classes.tableRow}`]: {
+        cursor: 'pointer',
+    },
+    [`& .${classes.tableRowHover}`]: {
+        '&:hover': {
+            backgroundColor: theme.palette.grey[200],
+        },
+    },
+    [`& .${classes.tableCell}`]: {
+        flex: 1,
+    },
+    [`& .${classes.noClick}`]: {
+        cursor: 'initial',
+    },
+});
+
+const mapStatusToString = {
+    0: 'Pending',
+    1: 'Approval',
+    2: 'Disapproval'
+}
+class MuiVirtualizedTable extends PureComponent {
+    static defaultProps = {
+        headerHeight: 48,
+        rowHeight: 48,
     };
-}
 
-function descendingComparator(a, b, orderBy) {
-    if (b[orderBy] < a[orderBy]) {
-        return -1;
-    }
-    if (b[orderBy] > a[orderBy]) {
-        return 1;
-    }
-    return 0;
-}
 
-function getComparator(order, orderBy) {
-    return order === 'desc'
-        ? (a, b) => descendingComparator(a, b, orderBy)
-        : (a, b) => -descendingComparator(a, b, orderBy);
-}
+    getRowClassName = ({ index }) => {
+        const { onRowClick } = this.props;
 
-// This method is created for cross-browser compatibility, if you don't
-// need to support IE11, you can use Array.prototype.sort() directly
-function stableSort(array, comparator) {
-    const stabilizedThis = array.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
-        const order = comparator(a[0], b[0]);
-        if (order !== 0) {
-            return order;
+        return clsx(classes.tableRow, classes.flexContainer, {
+            [classes.tableRowHover]: index !== -1 && onRowClick != null,
+        });
+    };
+
+    cellRenderer = ({ cellData, columnIndex, rowData: { status, id }, }) => {
+        const { columns, rowHeight, onRowClick, updatedPlaceNameStatus } = this.props;
+        if (columnIndex === 4) {
+            return [
+                <TableCell component="div" key="Approve"
+                    width={200}
+                    className={clsx(classes.tableCell, classes.flexContainer, {
+                        [classes.noClick]: onRowClick == null,
+                    })}
+                    variant="body"
+                    style={{ height: rowHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
+                    align={
+                        (columnIndex != null && columns[columnIndex].numeric) || false
+                            ? 'right'
+                            : 'left'
+                    }>
+                    <StatusButton status={status} updatedPlaceNameStatus={updatedPlaceNameStatus} placeId={id}>Approve</StatusButton>
+                </TableCell>,
+                <TableCell component="div" key="Discard"
+                    className={clsx(classes.tableCell, classes.flexContainer, {
+                        [classes.noClick]: onRowClick == null,
+                    })}
+                    variant="body"
+                    style={{ height: rowHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
+                    align={
+                        (columnIndex != null && columns[columnIndex].numeric) || false
+                            ? 'right'
+                            : 'left'
+                    }>
+                    <StatusButton status={status} variant={2} updatedPlaceNameStatus={updatedPlaceNameStatus} placeId={id}>
+                        Discard
+                    </StatusButton>
+                </TableCell>]
         }
-        return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
-}
-
-const headCells = [
-    {
-        id: 'name',
-        numeric: false,
-        disablePadding: true,
-        label: 'Dessert (100g serving)',
-    },
-    {
-        id: 'calories',
-        numeric: true,
-        disablePadding: false,
-        label: 'Calories',
-    },
-    {
-        id: 'fat',
-        numeric: true,
-        disablePadding: false,
-        label: 'Fat (g)',
-    },
-    {
-        id: 'carbs',
-        numeric: true,
-        disablePadding: false,
-        label: 'Carbs (g)',
-    },
-    {
-        id: 'protein',
-        numeric: true,
-        disablePadding: false,
-        label: 'Protein (g)',
-    },
-];
-
-function EnhancedTableHead(props) {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
-        props;
-    const createSortHandler = (property) => (event) => {
-        onRequestSort(event, property);
+        return (
+            <TableCell
+                component="div"
+                className={clsx(classes.tableCell, classes.flexContainer, {
+                    [classes.noClick]: onRowClick == null,
+                })}
+                variant="body"
+                style={{ height: rowHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
+                align={
+                    (columnIndex != null && columns[columnIndex].numeric) || false
+                        ? 'right'
+                        : 'left'
+                }
+            >
+                {columnIndex === 3 ? mapStatusToString[cellData] : cellData}
+            </TableCell>
+        );
     };
 
-    return (
-        <TableHead>
-            <TableRow>
-                <TableCell padding="checkbox">
-                    <Checkbox
-                        color="primary"
-                        indeterminate={numSelected > 0 && numSelected < rowCount}
-                        checked={rowCount > 0 && numSelected === rowCount}
-                        onChange={onSelectAllClick}
-                        inputProps={{
-                            'aria-label': 'select all desserts',
-                        }}
-                    />
+    headerRenderer = ({ label, columnIndex }) => {
+        const { headerHeight, columns, statusType, setStatusType, } = this.props;
+        const chipClickHandler = (status) => {
+            if (statusType === status) {
+                setStatusType(null);
+            } else {
+                setStatusType(status);
+            }
+        }
+        if (columnIndex === 4) {
+            return (
+                <TableCell
+                    component="div"
+                    className={clsx(classes.tableCell, classes.flexContainer, classes.noClick)}
+                    variant="head"
+                    style={{ height: headerHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
+                    align={columns[columnIndex].numeric || false ? 'center' : 'center'}
+                >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <span>{label}</span>
+                        <Chip label="Pending" onClick={() => chipClickHandler(0)} variant={statusType === 0 ? 'filled' : 'outlined'} />
+                        <Chip label="Approval" onClick={() => chipClickHandler(1)} variant={statusType === 1 ? 'filled' : 'outlined'} />
+                        <Chip label="Discard" onClick={() => chipClickHandler(2)} variant={statusType === 2 ? 'filled' : 'outlined'} />
+                    </Stack>
                 </TableCell>
-                
-                {headCells.map((headCell) => (
-                    <TableCell
-                        colSpan={headCell.label === 'Protein (g)'? 3: 1}
-                        key={headCell.id}
-                        align={headCell.numeric ? 'right' : 'left'}
-                        padding={headCell.disablePadding ? 'none' : 'normal'}
-                        sortDirection={orderBy === headCell.id ? order : false}
-                    >
-                        <TableSortLabel
-                            active={orderBy === headCell.id}
-                            direction={orderBy === headCell.id ? order : 'asc'}
-                            onClick={createSortHandler(headCell.id)}
-                        >
-                            {headCell.label}
-                            {orderBy === headCell.id ? (
-                                <Box component="span" sx={visuallyHidden}>
-                                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                </Box>
-                            ) : null}
-                        </TableSortLabel>
-                    </TableCell>
-                ))}
-            </TableRow>
-        </TableHead>
-    );
-}
-
-EnhancedTableHead.propTypes = {
-    numSelected: PropTypes.number.isRequired,
-    onRequestSort: PropTypes.func.isRequired,
-    onSelectAllClick: PropTypes.func.isRequired,
-    order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-    orderBy: PropTypes.string.isRequired,
-    rowCount: PropTypes.number.isRequired,
-};
-
-const EnhancedTableToolbar = (props) => {
-    const { numSelected } = props;
-
-    return (
-        <Toolbar
-            sx={{
-                pl: { sm: 2 },
-                pr: { xs: 1, sm: 1 },
-                ...(numSelected > 0 && {
-                    bgcolor: (theme) =>
-                        alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-                }),
-            }}
-        >
-            {numSelected > 0 ? (
-                <Typography
-                    sx={{ flex: '1 1 100%' }}
-                    color="inherit"
-                    variant="subtitle1"
-                    component="div"
-                >
-                    {numSelected} selected
-                </Typography>
-            ) : (
-                <Typography
-                    sx={{ flex: '1 1 100%' }}
-                    variant="h6"
-                    id="tableTitle"
-                    component="div"
-                >
-                    Nutrition
-                </Typography>
-            )}
-
-            {numSelected > 0 ? (
-                <Tooltip title="Delete">
-                    <IconButton>
-                        {/* <DeleteIcon /> */}
-                    </IconButton>
-                </Tooltip>
-            ) : (
-                <Tooltip title="Filter list">
-                    <IconButton>
-                        {/* <FilterListIcon /> */}
-                    </IconButton>
-                </Tooltip>
-            )}
-        </Toolbar>
-    );
-};
-
-EnhancedTableToolbar.propTypes = {
-    numSelected: PropTypes.number.isRequired,
-};
-
-const initRows = [
-    createData('Cupcake', 305, 3.7, 67, 4.3),
-    createData('Donut', 452, 25.0, 51, 4.9),
-    createData('Eclair', 262, 16.0, 24, 6.0),
-    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-    createData('Gingerbread', 356, 16.0, 49, 3.9),
-    createData('Honeycomb', 408, 3.2, 87, 6.5),
-    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-    createData('Jelly Bean', 375, 0.0, 94, 0.0),
-    createData('KitKat', 518, 26.0, 65, 7.0),
-    createData('Lollipop', 392, 0.2, 98, 0.0),
-    createData('Marshmallow', 318, 0, 81, 2.0),
-    createData('Nougat', 360, 19.0, 9, 37.0),
-    createData('Oreo', 437, 18.0, 63, 4.0),
-];
-
-export const ReviewPlace = () => {
-    const [order, setOrder] = React.useState('asc');
-    const [orderBy, setOrderBy] = React.useState('calories');
-    const [selected, setSelected] = React.useState([]);
-    const [page, setPage] = React.useState(0);
-    const [dense, setDense] = React.useState(false);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
-    const [rows, setRows] = React.useState([]);
-
-    React.useEffect(() => {
-        setRows(initRows);
-    }, []);
-
-    const handleRequestSort = (event, property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
-        setOrderBy(property);
-    };
-
-    const handleSelectAllClick = (event) => {
-        if (event.target.checked) {
-            const newSelected = rows.map((n) => n.name);
-            setSelected(newSelected);
-            return;
-        }
-        setSelected([]);
-    };
-
-    const handleClick = (event, name) => {
-        const selectedIndex = selected.indexOf(name);
-        let newSelected = [];
-
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, name);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1),
             );
         }
-
-        setSelected(newSelected);
+        return (
+            <TableCell
+                component="div"
+                className={clsx(classes.tableCell, classes.flexContainer, classes.noClick)}
+                variant="head"
+                style={{ height: headerHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
+                align={columns[columnIndex].numeric || false ? 'center' : 'center'}
+            >
+                <span>{label}</span>
+            </TableCell>
+        );
     };
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
+    render() {
+        const { columns, rowHeight, headerHeight, ...tableProps } = this.props;
+        return (
+            <AutoSizer>
+                {({ height, width }) => (
+                    <Table
+                        height={height}
+                        width={width}
+                        rowHeight={rowHeight}
+                        gridStyle={{
+                            direction: 'inherit',
+                        }}
+                        headerHeight={headerHeight}
+                        {...tableProps}
+                        rowClassName={this.getRowClassName}
+                    >
+                        {columns.map(({ dataKey, ...other }, index) => {
+                            return (
+                                <Column
+                                    key={dataKey}
+                                    headerRenderer={(headerProps) =>
+                                        this.headerRenderer({
+                                            ...headerProps,
+                                            columnIndex: index,
+                                        })
+                                    }
+                                    className={classes.flexContainer}
+                                    cellRenderer={this.cellRenderer}
+                                    dataKey={dataKey}
+                                    {...other}
+                                />
+                            );
+                        })}
+                    </Table>
+                )}
+            </AutoSizer>
+        );
+    }
+}
 
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
+MuiVirtualizedTable.propTypes = {
+    columns: PropTypes.arrayOf(
+        PropTypes.shape({
+            dataKey: PropTypes.string.isRequired,
+            label: PropTypes.string.isRequired,
+            numeric: PropTypes.bool,
+            width: PropTypes.number.isRequired,
+        }),
+    ).isRequired,
+    headerHeight: PropTypes.number,
+    onRowClick: PropTypes.func,
+    rowHeight: PropTypes.number,
+};
 
-    const handleChangeDense = (event) => {
-        setDense(event.target.checked);
-    };
+const VirtualizedTable = styled(MuiVirtualizedTable)(styles);
 
-    const isSelected = (name) => selected.indexOf(name) !== -1;
 
-    // Avoid a layout jump when reaching the last page with empty rows.
-    const emptyRows =
-        page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+
+// ---
+const fetchPlaceNameApiAdapter = async ({ filter, sorting, currentPage, pageSize }, statusType) => {
+    const mapstatusType = {
+        'Pending': 0,
+        'Approval': 1,
+        'Disapproval': 2,
+    }
+
+    const fetchApi = statusType === null ? fetchPlaceNamesApi : fetchPlaceNamesByStatusApi;
+    const { items, totalCount } = await fetchApi({ filter, sorting, skipCount: (currentPage - 1) * pageSize, maxResultCount: pageSize, statusType: statusType });
+    const placeNameIds = items.map(item => item.id);
+    const placeNames = items.reduce((result, item) => {
+        result[item.id] = { ...item, status: mapstatusType[item.status] };
+        return result;
+    }, {});
+
+    return {
+        placeNameIds,
+        placeNames,
+        totalCount,
+    }
+}
+
+function useFetchPlaceNames() {
+    const [parameters, setParameters] = useState({
+        filter: '',
+        sorting: '',
+        currentPage: 1,
+        pageSize: 20,
+    })
+
+    const [totalPage, setTotalPage] = useState(0);
+    const [statusType, setStatusType] = useState(null);
+
+    const { data, error, exce, status, setData } = useApi(fetchPlaceNameApiAdapter);
+    const fetchTimeoutId = useRef(null);
+    useEffect(() => {
+        if (fetchTimeoutId.current !== null) {
+            clearTimeout(fetchTimeoutId.current);
+        }
+        fetchTimeoutId.current = setTimeout(() => {
+            exce(parameters, statusType);
+            fetchTimeoutId.current = null;
+        })
+
+        return () => clearTimeout(fetchTimeoutId.current);
+    }, [parameters, exce, statusType]);
+
+    useEffect(() => {
+        setParameters(current => ({ ...current, currentPage: 1 }))
+    }, [statusType])
+
+    useEffect(() => {
+        if (data?.totalCount > 0 && parameters.pageSize > 0 && status !== PENDING) {
+            setTotalPage(Math.ceil(data.totalCount / parameters.pageSize))
+        }
+    }, [parameters, data, status])
+
+    const updatedPlaceNameStatus = (updatePlace) => {
+        console.log('updatePlace............', updatePlace);
+        setData(current => ({
+            ...current,
+            placeNames: { ...current.placeNames, [updatePlace.id]: updatePlace }
+        }))
+        // setData((current) => {
+        //     const items = current.items.map(item => {
+        //         if (item.id === updatePlace.id) {
+        //             return updatePlace;
+        //         }
+        //         return item;
+        //     })
+        //     return {
+        //         ...current,
+        //         items,
+        //     }
+        // })
+    }
+    return {
+        status,
+        placeNameData: data ?? {},
+        error,
+        parameters,
+        setParameters,
+        updatedPlaceNameStatus,
+        totalPage,
+        statusType,
+        setStatusType,
+    }
+}
+
+export function ReviewPlace() {
+
+    const {
+        error,
+        placeNameData,
+        parameters,
+        setParameters,
+        status,
+        updatedPlaceNameStatus,
+        totalPage,
+        statusType,
+        setStatusType,
+    } = useFetchPlaceNames();
 
     return (
-        <Box sx={{ width: '100%' }}>
-            <Paper sx={{ width: '100%', mb: 2 }}>
-                <EnhancedTableToolbar numSelected={selected.length} />
-                <TableContainer>
-                    <Table
-                        sx={{ minWidth: 750 }}
-                        aria-labelledby="tableTitle"
-                        size={dense ? 'small' : 'medium'}>
-                        <EnhancedTableHead
-                            numSelected={selected.length}
-                            order={order}
-                            orderBy={orderBy}
-                            onSelectAllClick={handleSelectAllClick}
-                            onRequestSort={handleRequestSort}
-                            rowCount={rows.length} />
-                        <TableBody>
-                            {/* if you don't need to support IE11, you can replace the `stableSort` call with:
-                 rows.slice().sort(getComparator(order, orderBy)) */}
-                            {stableSort(rows, getComparator(order, orderBy))
-                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((row, index) => {
-                                    const isItemSelected = isSelected(row.name);
-                                    const labelId = `enhanced-table-checkbox-${index}`;
-
-                                    return (
-                                        <TableRow
-                                            hover
-                                            onClick={(event) => handleClick(event, row.name)}
-                                            role="checkbox"
-                                            aria-checked={isItemSelected}
-                                            tabIndex={-1}
-                                            key={row.name}
-                                            selected={isItemSelected}
-                                        >
-                                            <TableCell padding="checkbox">
-                                                <Checkbox
-                                                    color="primary"
-                                                    checked={isItemSelected}
-                                                    inputProps={{
-                                                        'aria-labelledby': labelId,
-                                                    }}
-                                                />
-                                            </TableCell>
-                                            <TableCell
-                                                component="th"
-                                                id={labelId}
-                                                scope="row"
-                                                padding="none"
-                                            >
-                                                {row.name}
-                                            </TableCell>
-                                            <TableCell align="right">{row.calories}</TableCell>
-                                            <TableCell align="right">{row.fat}</TableCell>
-                                            <TableCell align="right">{row.carbs}</TableCell>
-                                            <TableCell align="right">{row.protein}</TableCell>
-                                            <TableCell align="right">Chap thuan</TableCell>
-                                            <TableCell align="right">Tu chooi thuan</TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            {emptyRows > 0 && (
-                                <TableRow
-                                    style={{
-                                        height: (dense ? 33 : 53) * emptyRows,
-                                    }}
-                                >
-                                    <TableCell colSpan={6} />
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={rows.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
+        <Box paddingBottom={5}>
+            <Paper style={{ width: 1060, margin: "auto", padding: "0 0 20px" }}>
+                <Paper style={{ height: '80vh' }}>
+                    <VirtualizedTable
+                        rowCount={placeNameData?.placeNameIds?.length ?? 0}
+                        rowGetter={({ index }) => placeNameData?.placeNames?.[placeNameData?.placeNameIds?.[index]]}
+                        columns={[
+                            {
+                                width: 220,
+                                label: 'Place type category',
+                                dataKey: 'placeType',
+                            },
+                            {
+                                width: 250,
+                                label: 'Place type name',
+                                dataKey: 'name',
+                            },
+                            {
+                                width: 120,
+                                label: 'Source',
+                                dataKey: 'source',
+                            },
+                            {
+                                width: 120,
+                                label: 'Status',
+                                dataKey: 'status',
+                            },
+                            {
+                                width: 350,
+                                label: 'Action',
+                                dataKey: 'action',
+                            },
+                        ]}
+                        updatedPlaceNameStatus={updatedPlaceNameStatus}
+                        statusType={statusType}
+                        setStatusType={setStatusType}
+                    />
+                </Paper>
+                <Stack direction="row" justifyContent="end" marginTop={2}>
+                    <FormControl size="small">
+                        <InputLabel id="demo-simple-select-label">Size</InputLabel>
+                        <Select
+                            size="small"
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={parameters.pageSize}
+                            label="Size"
+                            onChange={(e) => setParameters((current) => ({ ...current, pageSize: e.target.value }))}>
+                            <MenuItem value={5}>5</MenuItem>
+                            <MenuItem value={20}>20</MenuItem>
+                            <MenuItem value={50}>50</MenuItem>
+                            <MenuItem value={100}>100</MenuItem>
+                            <MenuItem value={200}>200</MenuItem>
+                            <MenuItem value={1000}>1000</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Pagination count={totalPage ?? 0} shape="rounded" page={parameters.currentPage}
+                        onChange={(e, page) => setParameters((current) => ({ ...current, currentPage: page }))} />
+                </Stack>
             </Paper>
-            <FormControlLabel
-                control={<Switch checked={dense} onChange={handleChangeDense} />}
-                label="Dense padding"
-            />
         </Box>
     );
 }

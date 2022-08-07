@@ -54,23 +54,4 @@ function NoAccess() {
   return (<p className="text-center">You have no access to this content</p>)
 }
 
-
 export default App;
-
-
-
-const styles = {};
-
-styles.fill = {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0
-};
-
-styles.content = {
-  ...styles.fill,
-  top: "40px",
-  textAlign: "center"
-};
