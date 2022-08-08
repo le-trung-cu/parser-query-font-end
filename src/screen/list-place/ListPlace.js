@@ -129,12 +129,15 @@ const ListPlace = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+
   return (
     <Container>
       <Typography className={style.titleList} component="h1" variant="h5"> List place type</Typography>
       <TableContainer className={style.tableList} >
         <Table>
           <EnhancedTableHead
+            
             order={order}
             orderBy={orderBy}
             onRequestSort={handleRequestSort}

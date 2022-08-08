@@ -67,7 +67,7 @@ export const handlers = [
 
     const place = places.find(item => item.id === id);
     place.status = statusType;
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve));
     return res(ctx.json(place));
   })
 ]
