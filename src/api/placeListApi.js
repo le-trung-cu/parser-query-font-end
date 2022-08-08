@@ -2,8 +2,8 @@ import axios from "axios";
 
 function getApi() {
     return axios.create({
-        // baseURL: 'https://test-place.vimap.vn/api/',
-        baseURL: 'http://localhost:3000/',
+         baseURL: 'https://test-place.vimap.vn/api/',
+        //baseURL: 'http://localhost:3000/',
         
     })
 }
