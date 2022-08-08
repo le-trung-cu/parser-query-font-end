@@ -8,7 +8,7 @@ import { AutoSizer, Column, Table } from 'react-virtualized';
 import { PENDING, useApi } from '../../hooks/use-api';
 import { fetchPlaceNamesApi, fetchPlaceNamesByStatusApi } from '../../api/api';
 import { StatusButton } from './StatusButton';
-import { Chip, FormControl, InputLabel, MenuItem, Pagination, Select, Stack, Box } from '@mui/material';
+import { Chip, FormControl, InputLabel, MenuItem, Pagination, Select, Stack, Box, Typography } from '@mui/material';
 
 const classes = {
     flexContainer: 'ReactVirtualizedDemo-flexContainer',
@@ -80,12 +80,11 @@ class MuiVirtualizedTable extends PureComponent {
                         [classes.noClick]: onRowClick == null,
                     })}
                     variant="body"
-                    style={{ height: rowHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
-                    align={
-                        (columnIndex != null && columns[columnIndex].numeric) || false
-                            ? 'right'
-                            : 'left'
-                    }>
+                    style={{ 
+                        height: rowHeight,
+                        borderRight: '1px solid #e0e0e0', 
+                        borderLeft: columnIndex === 0 ? '1px solid #e0e0e0' : '' }}
+                    >
                     <StatusButton status={status} updatedPlaceNameStatus={updatedPlaceNameStatus} placeId={id}>Approve</StatusButton>
                 </TableCell>,
                 <TableCell component="div" key="Discard"
@@ -93,13 +92,12 @@ class MuiVirtualizedTable extends PureComponent {
                         [classes.noClick]: onRowClick == null,
                     })}
                     variant="body"
-                    style={{ height: rowHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
-                    align={
-                        (columnIndex != null && columns[columnIndex].numeric) || false
-                            ? 'right'
-                            : 'left'
-                    }>
-                    <StatusButton status={status} variant={2} updatedPlaceNameStatus={updatedPlaceNameStatus} placeId={id}>
+                    style={{ 
+                        height: rowHeight, 
+                        borderRight: '1px solid #e0e0e0', 
+                        borderLeft: columnIndex === 0 ? '1px solid #e0e0e0' : '' }}
+                    >
+                    <StatusButton  status={status} variant={2} updatedPlaceNameStatus={updatedPlaceNameStatus} placeId={id}>
                         Discard
                     </StatusButton>
                 </TableCell>]
@@ -111,12 +109,11 @@ class MuiVirtualizedTable extends PureComponent {
                     [classes.noClick]: onRowClick == null,
                 })}
                 variant="body"
-                style={{ height: rowHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
-                align={
-                    (columnIndex != null && columns[columnIndex].numeric) || false
-                        ? 'right'
-                        : 'left'
-                }
+                style={{ 
+                    height: rowHeight, 
+                borderRight: '1px solid #e0e0e0', 
+                borderLeft: columnIndex === 0 ? '1px solid #e0e0e0' : '' }}
+                
             >
                 {columnIndex === 3 ? mapStatusToString[cellData] : cellData}
             </TableCell>
@@ -138,14 +135,21 @@ class MuiVirtualizedTable extends PureComponent {
                     component="div"
                     className={clsx(classes.tableCell, classes.flexContainer, classes.noClick)}
                     variant="head"
-                    style={{ height: headerHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
+                    style={{ 
+                        height: headerHeight, 
+                        display: 'flex',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgb(183, 183, 184)',
+                        fontWeight: 'bold',
+                        borderRight: '1px solid #e0e0e0',
+                        }}
                     align={columns[columnIndex].numeric || false ? 'center' : 'center'}
                 >
                     <Stack direction="row" spacing={1} alignItems="center">
                         <span>{label}</span>
-                        <Chip label="Pending" onClick={() => chipClickHandler(0)} variant={statusType === 0 ? 'filled' : 'outlined'} />
-                        <Chip label="Approval" onClick={() => chipClickHandler(1)} variant={statusType === 1 ? 'filled' : 'outlined'} />
-                        <Chip label="Discard" onClick={() => chipClickHandler(2)} variant={statusType === 2 ? 'filled' : 'outlined'} />
+                        <Chip style={{backgroundColor: '#cc7a00', color: '#ffffff'}} label="Pending" onClick={() => chipClickHandler(0)} variant={statusType === 0 ? 'filled' : 'outlined'} />
+                        <Chip style={{backgroundColor: '#008000', color: '#ffffff'}} label="Approval" onClick={() => chipClickHandler(1)} variant={statusType === 1 ? 'filled' : 'outlined'} />
+                        <Chip style={{backgroundColor: '#cc0000', color: '#ffffff'}} label="Discard" onClick={() => chipClickHandler(2)} variant={statusType === 2 ? 'filled' : 'outlined'} />
                     </Stack>
                 </TableCell>
             );
@@ -155,7 +159,14 @@ class MuiVirtualizedTable extends PureComponent {
                 component="div"
                 className={clsx(classes.tableCell, classes.flexContainer, classes.noClick)}
                 variant="head"
-                style={{ height: headerHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
+                style={{ 
+                    height: headerHeight, 
+                    display: 'flex',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgb(183, 183, 184)',
+                        fontWeight: 'bold',
+                        borderRight: '1px solid #e0e0e0',
+                        }}
                 align={columns[columnIndex].numeric || false ? 'center' : 'center'}
             >
                 <span>{label}</span>
@@ -326,66 +337,78 @@ export function ReviewPlace() {
     } = useFetchPlaceNames();
 
     return (
-        <Box paddingBottom={5}>
-            <Paper style={{ width: 1060, margin: "auto", padding: "0 0 20px" }}>
-                <Paper style={{ height: '80vh' }}>
-                    <VirtualizedTable
-                        rowCount={placeNameData?.placeNameIds?.length ?? 0}
-                        rowGetter={({ index }) => placeNameData?.placeNames?.[placeNameData?.placeNameIds?.[index]]}
-                        columns={[
-                            {
-                                width: 220,
-                                label: 'Place type category',
-                                dataKey: 'placeType',
-                            },
-                            {
-                                width: 250,
-                                label: 'Place type name',
-                                dataKey: 'name',
-                            },
-                            {
-                                width: 120,
-                                label: 'Source',
-                                dataKey: 'source',
-                            },
-                            {
-                                width: 120,
-                                label: 'Status',
-                                dataKey: 'status',
-                            },
-                            {
-                                width: 350,
-                                label: 'Action',
-                                dataKey: 'action',
-                            },
-                        ]}
-                        updatedPlaceNameStatus={updatedPlaceNameStatus}
-                        statusType={statusType}
-                        setStatusType={setStatusType}
-                    />
+        <div>
+            <Typography 
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    margin: '30px 0 30px 0',
+                }}
+                component="h1"
+                variant="h5"
+            >List place type</Typography>
+
+            <Box paddingBottom={5}>
+                <Paper elevation={0} style={{ width: 1060, margin: "auto", padding: "0 0 20px" }}>
+                    <Paper elevation={0} style={{ height: '80vh' }}>
+                        <VirtualizedTable
+                            rowCount={placeNameData?.placeNameIds?.length ?? 0}
+                            rowGetter={({ index }) => placeNameData?.placeNames?.[placeNameData?.placeNameIds?.[index]]}
+                            columns={[
+                                {
+                                    width: 220,
+                                    label: 'Place type category',
+                                    dataKey: 'placeType',
+                                },
+                                {
+                                    width: 250,
+                                    label: 'Place type name',
+                                    dataKey: 'name',
+                                },
+                                {
+                                    width: 120,
+                                    label: 'Source',
+                                    dataKey: 'source',
+                                },
+                                {
+                                    width: 120,
+                                    label: 'Status',
+                                    dataKey: 'status',
+                                },
+                                {
+                                    width: 350,
+                                    label: 'Action',
+                                    dataKey: 'action',
+                                },
+                            ]}
+                            updatedPlaceNameStatus={updatedPlaceNameStatus}
+                            statusType={statusType}
+                            setStatusType={setStatusType}
+                        />
+                    </Paper>
+                    <Stack direction="row" justifyContent="end" marginTop={2}>
+                        <FormControl size="small">
+                            <InputLabel id="demo-simple-select-label">Size</InputLabel>
+                            <Select
+                                size="small"
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={parameters.pageSize}
+                                label="Size"
+                                onChange={(e) => setParameters((current) => ({ ...current, pageSize: e.target.value }))}>
+                                <MenuItem value={5}>5</MenuItem>
+                                <MenuItem value={20}>20</MenuItem>
+                                <MenuItem value={50}>50</MenuItem>
+                                <MenuItem value={100}>100</MenuItem>
+                                <MenuItem value={200}>200</MenuItem>
+                                <MenuItem value={1000}>1000</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <Pagination count={totalPage ?? 0} shape="rounded" page={parameters.currentPage}
+                            onChange={(e, page) => setParameters((current) => ({ ...current, currentPage: page }))} />
+                    </Stack>
                 </Paper>
-                <Stack direction="row" justifyContent="end" marginTop={2}>
-                    <FormControl size="small">
-                        <InputLabel id="demo-simple-select-label">Size</InputLabel>
-                        <Select
-                            size="small"
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={parameters.pageSize}
-                            label="Size"
-                            onChange={(e) => setParameters((current) => ({ ...current, pageSize: e.target.value }))}>
-                            <MenuItem value={5}>5</MenuItem>
-                            <MenuItem value={20}>20</MenuItem>
-                            <MenuItem value={50}>50</MenuItem>
-                            <MenuItem value={100}>100</MenuItem>
-                            <MenuItem value={200}>200</MenuItem>
-                            <MenuItem value={1000}>1000</MenuItem>
-                        </Select>
-                    </FormControl>
-                    <Pagination count={totalPage ?? 0} shape="rounded" page={parameters.currentPage}
-                        onChange={(e, page) => setParameters((current) => ({ ...current, currentPage: page }))} />
-                </Stack>
-            </Paper>
-        </Box>
+            </Box>
+        </div>
     );
 }

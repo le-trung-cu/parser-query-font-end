@@ -3,10 +3,9 @@ import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { styled } from '@mui/material/styles';
 import TableCell from '@mui/material/TableCell';
-import Paper from '@mui/material/Paper';
 import { AutoSizer, Column, Table } from 'react-virtualized';
 import { fetchPlaceNamesApi } from '../../api/api'
-import { Pagination, Typography, Container, Stack, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import { Pagination, Typography, Container, Stack, FormControl, InputLabel, Select, MenuItem, TableContainer } from '@mui/material'
 import style from './ListPlace.module.css';
 const classes = {
   flexContainer: 'ReactVirtualizedDemo-flexContainer',
@@ -73,12 +72,11 @@ class MuiVirtualizedTable extends PureComponent {
           [classes.noClick]: onRowClick == null,
         })}
         variant="body"
-        style={{ height: rowHeight }}
-        align={
-          (columnIndex != null && columns[columnIndex].numeric) || false
-            ? 'right'
-            : 'left'
-        }
+        style={{
+          height: rowHeight,
+          borderRight: '1px solid #e0e0e0', 
+          borderLeft: columnIndex === 0 ? '1px solid #e0e0e0' : '' 
+        }}
       >
         {cellData}
       </TableCell>
@@ -94,8 +92,15 @@ class MuiVirtualizedTable extends PureComponent {
         component="div"
         className={clsx(classes.tableCell, classes.flexContainer, classes.noClick)}
         variant="head"
-        style={{ height: headerHeight, }}
-        align={columns[columnIndex].numeric || false ? 'right' : 'left'}
+        style={{
+          height: headerHeight,
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor: 'rgb(183, 183, 184)',
+          fontWeight: 'bold',
+          borderRight: '1px solid #e0e0e0',
+        }}
+        
       >
         <span>{label}</span>
       </TableCell>
@@ -168,7 +173,7 @@ export function ListPlace() {
     filter: '', sorting: '', currentPage: 1, pageSize: 50
   })
   async function fetchPlaceNames() {
-    const {items, totalCount} = await fetchPlaceNamesApi({
+    const { items, totalCount } = await fetchPlaceNamesApi({
       // onclick number change page of Pagination
       filter: '',
       sorting: '',
@@ -187,31 +192,31 @@ export function ListPlace() {
     setParameters((currentParameters) => ({ ...currentParameters, currentPage: page }));
   }
   const handleChangeSelectPage = (event) => {
-    setParameters((currentParameters) => ({ ...currentParameters, pageSize: event.target.value, currentPage:1}))
+    setParameters((currentParameters) => ({ ...currentParameters, pageSize: event.target.value, currentPage: 1 }))
   }
   return (
     <div>
       <Typography className={style.titleList} component="h1" variant="h5"> List place type</Typography>
-      <Container>
-        <Paper elevation={0} className={style.paperList}>
+      <Container  >
+        <TableContainer elevation={0} className={style.paperList}>
           <VirtualizedTable
 
             rowCount={rows.length}
             rowGetter={({ index }) => rows[index]}
             columns={[
               {
-                width: 350,
+                width: 380,
                 label: 'place type category',
                 dataKey: 'placeType',
               },
               {
-                width: 350,
+                width: 380,
                 label: 'place type name',
                 dataKey: 'name',
                 numeric: true,
               },
               {
-                width: 335,
+                width: 380,
                 label: 'source',
                 dataKey: 'source',
                 numeric: true,
@@ -219,7 +224,7 @@ export function ListPlace() {
             ]}
           />
 
-        </Paper>
+        </TableContainer>
         <Stack direction="row" justifyContent="end" marginTop={2}>
           <FormControl size="small">
             <InputLabel id="demo-simple-select-label">Size</InputLabel>
