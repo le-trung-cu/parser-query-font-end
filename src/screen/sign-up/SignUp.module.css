@@ -1,0 +1,10 @@
+.boxUp {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+.containerSignUp{
+    display: flex;
+    align-items: center;
+    height: 100vh;
+  }
