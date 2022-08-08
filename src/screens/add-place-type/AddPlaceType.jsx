@@ -214,7 +214,7 @@ export const AddPlaceType = () => {
     }, [])
 
     return (
-        <Box data-testid="add-place-type-form" id="add-place-type-form" component="form" maxWidth={400} marginX="auto" noValidate
+        <Box data-testid="add-place-type-form" id="add-place-type-form" component="form" maxWidth={400} paddingX={2} marginX="auto" noValidate
             onSubmit={handleSubmit}>
             <Stack direction="column" spacing={3}>
                 <h1>Add place type</h1>

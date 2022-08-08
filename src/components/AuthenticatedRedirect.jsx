@@ -1,13 +1,22 @@
 import { useAuth } from "../hooks/use-auth";
-import { Navigate, useLocation } from 'react-router-dom';
-import { SignIn } from "../screens/sign-in/SignIn";
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
+import { Box, CircularProgress } from "@mui/material";
 
 export const AuthenticatedRedirect = ({ children }) => {
     const { user } = useAuth();
-    const location = useLocation();
-    if (!user?.authenticated) {
-        return <Navigate to="/sign-in" replace state={{ from: location }}><SignIn/></Navigate>
-    }
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (!user?.authenticated) {
+            const id = setTimeout(() => {
+                navigate('/sign-in');
+            }, 1000);
+            return () => clearTimeout(id);
+        }
+    }, [user]);
 
-    return children;
+    return user.authenticated ? children : (
+    <Box  justifyContent="center" textAlign="center">
+        <CircularProgress/>
+    </Box>)
 }

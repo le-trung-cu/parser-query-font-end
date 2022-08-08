@@ -8,7 +8,7 @@ import { AutoSizer, Column, Table } from 'react-virtualized';
 import { PENDING, useApi } from '../../hooks/use-api';
 import { fetchPlaceNamesApi, fetchPlaceNamesByStatusApi } from '../../api/api';
 import { StatusButton } from './StatusButton';
-import { Chip, FormControl, InputLabel, MenuItem, Pagination, Select, Stack, Box } from '@mui/material';
+import { Chip, FormControl, InputLabel, MenuItem, Pagination, Select, Stack, Box, TableSortLabel } from '@mui/material';
 
 const classes = {
     flexContainer: 'ReactVirtualizedDemo-flexContainer',
@@ -72,7 +72,7 @@ class MuiVirtualizedTable extends PureComponent {
 
     cellRenderer = ({ cellData, columnIndex, rowData: { status, id }, }) => {
         const { columns, rowHeight, onRowClick, updatedPlaceNameStatus } = this.props;
-        if (columnIndex === 4) {
+        if (columnIndex === 3) {
             return [
                 <TableCell component="div" key="Approve"
                     width={200}
@@ -118,13 +118,13 @@ class MuiVirtualizedTable extends PureComponent {
                         : 'left'
                 }
             >
-                {columnIndex === 3 ? mapStatusToString[cellData] : cellData}
+                {cellData}
             </TableCell>
         );
     };
 
-    headerRenderer = ({ label, columnIndex }) => {
-        const { headerHeight, columns, statusType, setStatusType, } = this.props;
+    headerRenderer = ({ label, dataKey, columnIndex }) => {
+        const { headerHeight, columns, statusType, setStatusType, order, onChangeOrder } = this.props;
         const chipClickHandler = (status) => {
             if (statusType === status) {
                 setStatusType(null);
@@ -132,7 +132,7 @@ class MuiVirtualizedTable extends PureComponent {
                 setStatusType(status);
             }
         }
-        if (columnIndex === 4) {
+        if (columnIndex === 3) {
             return (
                 <TableCell
                     component="div"
@@ -156,9 +156,13 @@ class MuiVirtualizedTable extends PureComponent {
                 className={clsx(classes.tableCell, classes.flexContainer, classes.noClick)}
                 variant="head"
                 style={{ height: headerHeight, borderRight: '1px solid black', borderLeft: columnIndex === 0 ? '1px solid black' : '' }}
-                align={columns[columnIndex].numeric || false ? 'center' : 'center'}
-            >
-                <span>{label}</span>
+                align={columns[columnIndex].numeric || false ? 'center' : 'center'}>
+                <TableSortLabel active={order.orderField === dataKey} direction={order.orderField === dataKey ? order.orderDirection : 'asc'}
+                    onClick={(e) => onChangeOrder(dataKey)}>
+                    <Box component="span">
+                        <span>{label}</span>
+                    </Box>
+                </TableSortLabel>
             </TableCell>
         );
     };
@@ -248,6 +252,8 @@ function useFetchPlaceNames() {
     const [parameters, setParameters] = useState({
         filter: '',
         sorting: '',
+        orderField: '',
+        orderDirection: '',
         currentPage: 1,
         pageSize: 20,
     })
@@ -262,7 +268,11 @@ function useFetchPlaceNames() {
             clearTimeout(fetchTimeoutId.current);
         }
         fetchTimeoutId.current = setTimeout(() => {
-            exce(parameters, statusType);
+            let sorting = '';
+            if (parameters.orderField.length > 0) {
+                sorting = parameters.orderField + ' ' + parameters.orderDirection;
+            }
+            exce({ ...parameters, sorting }, statusType);
             fetchTimeoutId.current = null;
         })
 
@@ -325,10 +335,23 @@ export function ReviewPlace() {
         setStatusType,
     } = useFetchPlaceNames();
 
+    function orderChangeHandler(orderField) {
+
+        let orderDirection = 'asc';
+        if (orderField === parameters.orderField) {
+            if (parameters.orderDirection === 'asc') {
+                orderDirection = 'desc';
+            } else if (parameters.orderDirection === 'desc') {
+                orderDirection = 'asc';
+            }
+        }
+        setParameters(current => ({ ...current, orderField, orderDirection }))
+    }
+
     return (
         <Box paddingBottom={5}>
-            <Paper style={{ width: 1060, margin: "auto", padding: "0 0 20px" }}>
-                <Paper style={{ height: '80vh' }}>
+            <Stack style={{ height: "calc(100vh - 90px)", width: 940, margin: "auto" }}>
+                <Paper style={{ flex: "1 1" }}>
                     <VirtualizedTable
                         rowCount={placeNameData?.placeNameIds?.length ?? 0}
                         rowGetter={({ index }) => placeNameData?.placeNames?.[placeNameData?.placeNameIds?.[index]]}
@@ -349,11 +372,6 @@ export function ReviewPlace() {
                                 dataKey: 'source',
                             },
                             {
-                                width: 120,
-                                label: 'Status',
-                                dataKey: 'status',
-                            },
-                            {
                                 width: 350,
                                 label: 'Action',
                                 dataKey: 'action',
@@ -362,6 +380,8 @@ export function ReviewPlace() {
                         updatedPlaceNameStatus={updatedPlaceNameStatus}
                         statusType={statusType}
                         setStatusType={setStatusType}
+                        order={{ orderField: parameters.orderField, orderDirection: parameters.orderDirection }}
+                        onChangeOrder={orderChangeHandler}
                     />
                 </Paper>
                 <Stack direction="row" justifyContent="end" marginTop={2}>
@@ -373,7 +393,13 @@ export function ReviewPlace() {
                             id="demo-simple-select"
                             value={parameters.pageSize}
                             label="Size"
-                            onChange={(e) => setParameters((current) => ({ ...current, pageSize: e.target.value }))}>
+                            onChange={(e) => setParameters((current) => {
+                                return {
+                                    ...current,
+                                    pageSize: e.target.value,
+                                    currentPage: 1,
+                                }
+                            })}>
                             <MenuItem value={5}>5</MenuItem>
                             <MenuItem value={20}>20</MenuItem>
                             <MenuItem value={50}>50</MenuItem>
@@ -385,7 +411,7 @@ export function ReviewPlace() {
                     <Pagination count={totalPage ?? 0} shape="rounded" page={parameters.currentPage}
                         onChange={(e, page) => setParameters((current) => ({ ...current, currentPage: page }))} />
                 </Stack>
-            </Paper>
+            </Stack>
         </Box>
     );
 }
