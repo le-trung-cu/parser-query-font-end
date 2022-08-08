@@ -1,0 +1,9 @@
+.activeLink {
+    border: 1px solid #62a3ff;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.unactiveLink {
+    text-decoration: none;
+}
