@@ -1,8 +1,8 @@
 import axios from "axios"
 
 export const URLS = {
-    baseURL: 'https://test-place.vimap.vn/',
-    // baseURL: '/',
+    // baseURL: 'https://test-place.vimap.vn/',
+    baseURL: '/',
     signIn: 'api/app/login-token-result/login-get-token',
     signUp: 'api/account/register',
     placeTypes: 'api/app/place-type',

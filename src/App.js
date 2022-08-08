@@ -10,6 +10,8 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ReviewPlace } from './screens/review-place/ReviewPlace';
 import SignUp from './screens/sign-up/SignUp';
 import { Permission } from './components/permission/Permission';
+import {ListPlace} from './screens/list-place/ListPlace';
+
 import "./App.css";
 
 function App() {
@@ -43,7 +45,13 @@ function App() {
                 </Permission>
               </AuthenticatedRedirect>
             } />
+            <Route path='/list-place' element={
+              <ListPlace/>
+            }
+              
+            />
           </Routes>
+          
         </CSSTransition>
       </TransitionGroup>
     </div >

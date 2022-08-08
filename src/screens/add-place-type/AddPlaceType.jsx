@@ -1,9 +1,9 @@
+import styled from "@emotion/styled";
 import { Box, Stack, InputLabel, TextField, Button, Autocomplete, Alert } from "@mui/material";
 import { useEffect, useReducer, useRef } from "react";
 import { fetchPlaceTypesApi, fetchPlaceNameSuggestionsApi, createPlaceNameApi } from "../../api/api";
 import { LoadingIcon } from "../../components/LoadingIcon";
 import { IDLE, ERROR, PENDING, SUCCESS } from "../../hooks/use-api";
-
 const initState = {
     selectedPlaceType: null,
     inputPlaceName: '',
@@ -217,7 +217,7 @@ export const AddPlaceType = () => {
         <Box data-testid="add-place-type-form" id="add-place-type-form" component="form" maxWidth={400} marginX="auto" noValidate
             onSubmit={handleSubmit}>
             <Stack direction="column" spacing={3}>
-                <h1>Add place type</h1>
+                <h1 style={{textAlign: 'center'}}>Add place type</h1>
                 <div>
                     <InputLabel id="place-type">Place type</InputLabel>
                     <Autocomplete
