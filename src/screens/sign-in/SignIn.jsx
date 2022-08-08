@@ -1,32 +1,29 @@
-import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link, FormControl } from "@mui/material";
+import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link, Alert } from "@mui/material";
 import { useState } from "react";
-import { getApi, signInByEmailAndPassword } from "../../api/api";
+import { useAuth } from "../../hooks/use-auth";
+import { useNavigate } from "react-router-dom";
 
 export const SignIn = () => {
-
+    const navigate = useNavigate();
+    const { signIn } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState({
         email: null,
         password: null,
         signInFailMessage: null,
+        summary: [],
     });
 
     function validate() {
 
         let hasError = false;
-        setError({
-            email: null,
-            password: null,
-            signInFailMessage: null,
-        });
         let _error = {
             email: null,
             password: null,
             signInFailMessage: null,
         };
 
-        
         if (email.length === 0) {
             hasError = true;
             _error = {
@@ -37,7 +34,7 @@ export const SignIn = () => {
 
         if (password.length === 0) {
             hasError = true;
-            _error  = {
+            _error = {
                 ..._error,
                 password: 'Password is required',
             }
@@ -50,23 +47,21 @@ export const SignIn = () => {
 
     async function signInSubmit() {
         if (validate()) {
-            const signInResult = await signInByEmailAndPassword(email, password);
-            if (signInResult && signInResult.errorMessage) {
-                setError({
-                    ...error,
-                    signInFailMessage: signInResult.errorMessage,
-                });
+            const { data, error } = await signIn({ userNameOrEmailAddress: email, password });
+            if (error) {
+                setError((current) => ({ ...current, summary: [error.message] }))
+            } else {
+                navigate('/');
             }
         }
     }
 
     return (
-        <Box component="form" data-testid="sign-in" id="sign-in" maxWidth={400} margin="auto">
+        <Box component="form" data-testid="sign-in" id="sign-in" maxWidth={400} margin="auto" noValidate>
             <Stack direction="column" justifyContent="center" alignItems="center">
                 <h1 className="text-center">Sign in</h1>
-
-                <TextField margin="normal" fullWidth label="Email" variant="outlined"
-                    placeholder="Email"
+                <TextField margin="normal" fullWidth label="User name or Email" variant="outlined"
+                    placeholder="User name or Email"
                     name="email"
                     required
                     onChange={(e) => setEmail(e.target.value)}
@@ -84,11 +79,16 @@ export const SignIn = () => {
 
                 <Box marginBottom={3} width="100%">
                     <FormControlLabel control={<Checkbox defaultChecked />} label="Remember me" />
-                    {error.signInFailMessage && <Box color={'red'} marginY={1}>
-                        <span>{error.signInFailMessage}</span>
-                    </Box>
-                    }
                 </Box>
+                {error?.summary?.length > 0 && (
+                    <Box marginBottom={1}>
+                        <Alert severity="error" color="error">
+                                {error?.summary?.map(item => <p key={item}>{item}</p>)}
+                            {/* <ul>
+                            </ul> */}
+                        </Alert>
+                    </Box>
+                )}
                 <Button data-testid="btn-submit" fullWidth type="button" variant="contained" onClick={signInSubmit}>Sign In</Button>
                 <Stack width="100%" direction="row" justifyContent="end">
                     <Link mt={1} align="left" href="#">Don't have an account? Sign Up</Link>
