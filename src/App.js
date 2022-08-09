@@ -47,9 +47,12 @@ function App() {
               </AuthenticatedRedirect>
             } />
             <Route path='/list-place' element={
-              <ListPlace/>
+              <AuthenticatedRedirect>
+              <Permission roles={['admin']} noAccess={<NoAccess />}>
+                <ListPlace/>
+              </Permission>
+            </AuthenticatedRedirect>
             }
-              
             />
           </Routes>
           

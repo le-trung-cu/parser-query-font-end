@@ -20,7 +20,9 @@ export const LoadingIcon = ({ loading, size = 24, delay = 300, children }) => {
 
     return (
         <>
-            {showLoading && <CircularProgress data-testid="loading-icon" size={size} />}
+            {showLoading && <div style={{ justifyContent: 'center', display:'flex', flex: "1 1 0", alignItems: 'center' }}>
+                <CircularProgress data-testid="loading-icon" size={size} />
+            </div>}
             {!showLoading && children}
         </>
     )
