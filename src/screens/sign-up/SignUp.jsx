@@ -53,13 +53,15 @@ const SignUp = () => {
             await yupSchema.validate(state, { abortEarly: false });
             const { data, error } = await signUpApi(state);
             if (error) {
-                setError(error);
+                setError({summary:[error.message]});
             } else {
                 setShowSignUpSuccessMessage(true);
                 // sign up success.
-                const error = await signIn({ userNameOrEmailAddress: state.userName, password: state.password, rememberMe: true });
+                const {error} = await signIn({ userNameOrEmailAddress: state.userName, password: state.password, rememberMe: true });
                 if(!error){
                     navigate('/')
+                }else{
+                    console.log('login error', error);
                 }
             }
         } catch (error) {
