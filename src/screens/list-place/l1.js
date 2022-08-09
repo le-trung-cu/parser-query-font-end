@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import TableSortLabel from "@material-ui/core/TableSortLabel";
-import TablePagination from '@mui/material/TablePagination';
 import style from './ListPlace.module.css';
 import { getPlaceApi } from '../../api/placeListApi';
+import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, TablePagination} from '@mui/material';
 
 const listData = (category, name, source, id) => {
   return { category, name, source, id };
