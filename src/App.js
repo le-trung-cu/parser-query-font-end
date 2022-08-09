@@ -10,7 +10,7 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { ReviewPlace } from './screens/review-place/ReviewPlace';
 import SignUp from './screens/sign-up/SignUp';
 import { Permission } from './components/permission/Permission';
-import {ListPlace} from './screens/list-place/ListPlace';
+import { ListPlace } from './screens/list-place/ListPlace';
 
 import "./App.css";
 import { useAuth } from './hooks/use-auth';
@@ -28,16 +28,17 @@ function App() {
           unmountOnExit>
           <Routes>
             <Route path="/" element={
-              <AuthenticatedRedirect>
-                <AddPlaceType />
-              </AuthenticatedRedirect>} />
+              // <AuthenticatedRedirect>
+              <AddPlaceType />
+              // </AuthenticatedRedirect>
+            } />
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/sign-up" element={<SignUp />} />
 
             <Route path="/add-place" element={
-              <AuthenticatedRedirect>
+              // <AuthenticatedRedirect>
                 <AddPlaceType />
-              </AuthenticatedRedirect>
+              // </AuthenticatedRedirect>
             } />
             <Route path="/review-place" element={
               <AuthenticatedRedirect>
@@ -48,14 +49,14 @@ function App() {
             } />
             <Route path='/list-place' element={
               <AuthenticatedRedirect>
-              <Permission roles={['admin']} noAccess={<NoAccess />}>
-                <ListPlace/>
-              </Permission>
-            </AuthenticatedRedirect>
+                <Permission roles={['admin']} noAccess={<NoAccess />}>
+                  <ListPlace />
+                </Permission>
+              </AuthenticatedRedirect>
             }
             />
           </Routes>
-          
+
         </CSSTransition>
       </TransitionGroup>
     </div >
