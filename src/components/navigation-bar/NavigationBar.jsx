@@ -39,7 +39,7 @@ export const NavigationBar = () => {
                 <NavLink className={({ isActive }) => isActive ? style.activeLink : style.unactiveLink} to='/review-place'>
                     <Button>Review</Button>
                 </NavLink>
-                <NavLink className={({ isActive }) => isActive ? style.activeLink : style.unactiveLink} to="/place-list">
+                <NavLink className={({ isActive }) => isActive ? style.activeLink : style.unactiveLink} to="/list-place">
                     <Button>Place List</Button>
                 </NavLink>
                 {!user?.authenticated && (
