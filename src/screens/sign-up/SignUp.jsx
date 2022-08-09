@@ -29,9 +29,9 @@ const SignUp = () => {
     const navigate = useNavigate();
     const { signIn } = useAuth();
     const [state, setState] = useState({
-        userName: 'test@gmail.com',
-        emailAddress: 'test@gmail.com',
-        password: 'User@123',
+        userName: '',
+        emailAddress: '',
+        password: '',
     })
     const [error, setError] = useState({
         summary: [],
