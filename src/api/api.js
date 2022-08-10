@@ -7,7 +7,9 @@ export const URLS = {
     signUp: 'api/account/register',
     placeTypes: 'api/app/place-type',
     place: 'api/app/place',
+    placeTypeNames: 'api/app/place/place-type-name',
     placeByStatus: 'api/app/place/by-status-type',
+    exportPlace: 'api/v1/export-place',
 }
 
 function urlEncodeQueryParams(data) {
@@ -18,13 +20,15 @@ function urlEncodeQueryParams(data) {
     return query.length > 0 ? '?' + query : '';
 }
 
-export const getApi = () => {
+export const getApi = (config) => {
     const axiosInstance = axios.create({
         baseURL: URLS.baseURL,
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('TOKEN_BEARER')}`,
-        }
+            'RequestVerificationToken': getCookie('XSRF-TOKEN'),
+        },
+        responseType: config?.responseType,
     });
 
     return {
@@ -69,7 +73,7 @@ export const fetchPlaceNameSuggestionsApi = async (q = '') => {
 
     try {
         const api = getApi();
-        const response = await api.get(`${URLS.place}?filter=${q}`, {
+        const response = await api.get(`${URLS.placeTypeNames}?maxResultCount=999&&filter=${q}`, {
             signal: fetchSuggestionsController.signal,
         });
         fetchSuggestionsController = null;
@@ -89,13 +93,13 @@ export const createPlaceNameApi = async (placeType = '', name = '') => {
 
 export const fetchPlaceNamesApi = async (parameters = { filter: '', sorting: '', skipCount: 0, maxResultCount: 50 }) => {
     const api = getApi();
-    const  response = await api.get(URLS.place + urlEncodeQueryParams(parameters));
+    const response = await api.get(URLS.place + urlEncodeQueryParams(parameters));
     return response.data;
 }
 
-export const fetchPlaceNamesByStatusApi = async (parameters = { filter: '', sorting: '', skipCount: 0, maxResultCount: 50 , statusType: 0}) => {
+export const fetchPlaceNamesByStatusApi = async (parameters = { filter: '', sorting: '', skipCount: 0, maxResultCount: 50, statusType: 0 }) => {
     const api = getApi();
-    const  response = await api.get(URLS.placeByStatus + urlEncodeQueryParams(parameters));
+    const response = await api.get(URLS.placeByStatus + urlEncodeQueryParams(parameters));
     return response.data;
 }
 
@@ -104,4 +108,40 @@ export const updatePlaceNameStatusApi = async (id, statusType) => {
     const response = await api.put(`${URLS.place}/${id}?statusType=${statusType}`);
     console.log('data...........', response.data);
     return response.data;
+}
+
+
+export const exportPlaceApi = async () => {
+    const api = getApi({ responseType: 'blob' });
+    let anchor = document.createElement("a");
+    document.body.appendChild(anchor);
+
+    let headers = new Headers();
+    headers.append('Authorization', 'Bearer MY-TOKEN');
+
+    api.post(URLS.exportPlace)
+        .then(response => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'list-place-name.xlsx'); //or any other extension
+            document.body.appendChild(link);
+            link.click();
+        });
+}
+
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
 }

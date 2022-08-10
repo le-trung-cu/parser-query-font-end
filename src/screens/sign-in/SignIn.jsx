@@ -1,19 +1,32 @@
 import { Box, Stack, TextField, Button, Checkbox, FormControlLabel, Link, Alert } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/use-auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as LinkRouter } from "react-router-dom";
 
 export const SignIn = () => {
     const navigate = useNavigate();
     const { signIn } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [state, setState] = useState({
+        email: '',
+        password: '',
+        rememberMe: true,
+    });
+    const [rememberMe, setRememberMe] = useState(false);
+
+    // const [email, setEmail] = useState('');
+    // const [password, setPassword] = useState('');
+
     const [error, setError] = useState({
         email: null,
         password: null,
         signInFailMessage: null,
         summary: [],
     });
+
+    function inputChangeHandler(event) {
+        setState((current) => {
+            return{ ...current, [event.target.name]: event.target.value }});
+    }
 
     function validate() {
 
@@ -24,7 +37,7 @@ export const SignIn = () => {
             signInFailMessage: null,
         };
 
-        if (email.length === 0) {
+        if (state.email.length === 0) {
             hasError = true;
             _error = {
                 ..._error,
@@ -32,7 +45,7 @@ export const SignIn = () => {
             }
         }
 
-        if (password.length === 0) {
+        if (state.password.length === 0) {
             hasError = true;
             _error = {
                 ..._error,
@@ -45,9 +58,18 @@ export const SignIn = () => {
         return !hasError;
     }
 
+    useEffect(()=> {
+        console.log(rememberMe);
+        console.log(state);
+    }, [rememberMe, state])
+
     async function signInSubmit() {
         if (validate()) {
-            const { data, error } = await signIn({ userNameOrEmailAddress: email, password });
+            const { data, error } = await signIn({
+                userNameOrEmailAddress: state.email,
+                password: state.password,
+                rememberMe,
+            });
             if (error) {
                 setError((current) => ({ ...current, summary: [error.message] }))
             } else {
@@ -64,7 +86,7 @@ export const SignIn = () => {
                     placeholder="User name or Email"
                     name="email"
                     required
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={inputChangeHandler}
                     error={error.email != null}
                     helperText={error.email} />
 
@@ -73,17 +95,17 @@ export const SignIn = () => {
                     name="password"
                     type="password"
                     required
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={inputChangeHandler}
                     error={error.password != null}
                     helperText={error.password} />
 
                 <Box marginBottom={3} width="100%">
-                    <FormControlLabel control={<Checkbox defaultChecked />} label="Remember me" />
+                    <FormControlLabel control={<Checkbox checked={rememberMe} onChange={(e, checked) => setRememberMe(checked)} name="rememberMe" />} label="Remember me" />
                 </Box>
                 {error?.summary?.length > 0 && (
                     <Box marginBottom={1}>
                         <Alert severity="error" color="error">
-                                {error?.summary?.map(item => <p key={item}>{item}</p>)}
+                            {error?.summary?.map(item => <p key={item}>{item}</p>)}
                             {/* <ul>
                             </ul> */}
                         </Alert>
@@ -91,7 +113,7 @@ export const SignIn = () => {
                 )}
                 <Button data-testid="btn-submit" fullWidth type="button" variant="contained" onClick={signInSubmit}>Sign In</Button>
                 <Stack width="100%" direction="row" justifyContent="end">
-                    <Link mt={1} align="left" href="#">Don't have an account? Sign Up</Link>
+                    <Link component={LinkRouter} mt={1} align="left" to="/sign-up">Don't have an account? Sign Up</Link>
                 </Stack>
             </Stack>
         </Box>

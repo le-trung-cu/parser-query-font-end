@@ -70,7 +70,7 @@ export const AddPlaceType = () => {
                         data-testid="input-place-name"
                         freeSolo
                         loading={state.placeNameList.state === PENDING}
-                        options={state.placeNameList.items?.map(option => option.name) ?? []}
+                        options={state.placeNameList?.items ?? []}
                         value={state.inputPlaceName}
                         onChange={handleInputPlaceNameChange}
                         inputValue={state.inputPlaceName}
@@ -103,7 +103,7 @@ export const AddPlaceType = () => {
                             {state.submitPlaceName.createdPlaceName} just added into the database.
                         </Alert>)}
                     <Button data-testid="add-place-btn-sumbit" variant="contained" type="submit">
-                        Submit {state.inputPlaceName}
+                        Submit
                     </Button>
                 </Stack>
             </Stack>
@@ -125,8 +125,8 @@ export const AddPlaceType = () => {
 
         fetchPlaceTypeNamesTimeoutId.current = setTimeout(async () => {
             try {
-                const { items = [], totalCount = 0 } = await fetchPlaceNameSuggestionsApi(name);
-                dispatchFetchPlacenameList({ status: SUCCESS, items, totalCount });
+                const items = await fetchPlaceNameSuggestionsApi(name) ?? [];
+                dispatchFetchPlacenameList({ status: SUCCESS, items, totalCount:  items.length});
             } catch (error) {
                 dispatchFetchPlacenameList({ status: ERROR });
             }

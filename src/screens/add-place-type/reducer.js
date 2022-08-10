@@ -99,7 +99,7 @@ export function reducer(state = initState, action) {
                     }
                 case SUCCESS:
                     // check input place name exist
-                    const inputPlaceNameExist = action.payload.items.findIndex(item => item.name.toLowerCase() === state.inputPlaceName.toLowerCase()) >= 0;
+                    const inputPlaceNameExist = action.payload.items.findIndex(item => item.toLowerCase() === state.inputPlaceName.toLowerCase()) >= 0;
                     return {
                         ...state,
                         inputPlaceNameExist,
