@@ -1602,5 +1602,24 @@ export const handlers = [
         place.status = statusTypeCode[String(statusType)];
 
         return res(ctx.status(200), ctx.json({ ...place, status: statusType }));
+    }),
+
+    rest.get(URLS.placeTypeNames, async (req, res, ctx) => {
+        let items = placeNamesUserSubmited;
+        if (req.url.searchParams.has('filter')) {
+            items = items.filter(t => t.name.toLowerCase().indexOf(req.url.searchParams.get('filter').toLowerCase()) >= 0);
+        }
+        // pagination
+        let totalCount = items.length;
+        let start = parseInt(req.url.searchParams.get('skipCount')) || 0;
+        let pageSize = parseInt(req.url.searchParams.get('maxResultCount') || 5);
+        let end = start + pageSize;
+        end = end < items.length ? end : items.length;
+        items = items.slice(start, end);
+
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 500));
+        items = items.map(item => item.name);
+
+        return res(ctx.status(200), ctx.json(items));
     })
 ]

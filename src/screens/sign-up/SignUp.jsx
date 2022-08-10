@@ -9,7 +9,7 @@ import { useAuth } from '../../hooks/use-auth';
 import * as yup from 'yup';
 import YupPassword from 'yup-password';
 import { signUpApi } from '../../api/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as LinkRouter } from 'react-router-dom';
 
 YupPassword(yup);
 
@@ -29,9 +29,9 @@ const SignUp = () => {
     const navigate = useNavigate();
     const { signIn } = useAuth();
     const [state, setState] = useState({
-        userName: 'test@gmail.com',
-        emailAddress: 'test@gmail.com',
-        password: 'User@123',
+        userName: '',
+        emailAddress: '',
+        password: '',
     })
     const [error, setError] = useState({
         summary: [],
@@ -134,7 +134,7 @@ const SignUp = () => {
                         </Button>
                         <Grid container>
                             <Grid item >
-                                <Link to="/" variant='body2'>
+                                <Link component={LinkRouter} to="/sign-in" variant='body2'>
                                     Already have an account? Sign in
                                 </Link>
                             </Grid>

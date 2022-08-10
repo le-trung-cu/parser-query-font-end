@@ -4,8 +4,8 @@ import clsx from 'clsx';
 import { styled } from '@mui/material/styles';
 import TableCell from '@mui/material/TableCell';
 import { AutoSizer, Column, Table } from 'react-virtualized';
-import { fetchPlaceNamesApi } from '../../api/api'
-import { Pagination, Typography, Container, Stack, FormControl, InputLabel, Select, MenuItem, TableContainer } from '@mui/material'
+import { exportPlaceApi, fetchPlaceNamesApi } from '../../api/api'
+import { Pagination, Typography, Container, Stack, FormControl, InputLabel, Select, MenuItem, TableContainer, Button } from '@mui/material'
 import style from './ListPlace.module.css';
 const classes = {
   flexContainer: 'ReactVirtualizedDemo-flexContainer',
@@ -74,8 +74,8 @@ class MuiVirtualizedTable extends PureComponent {
         variant="body"
         style={{
           height: rowHeight,
-          borderRight: '1px solid #e0e0e0', 
-          borderLeft: columnIndex === 0 ? '1px solid #e0e0e0' : '' 
+          borderRight: '1px solid #e0e0e0',
+          borderLeft: columnIndex === 0 ? '1px solid #e0e0e0' : ''
         }}
       >
         {cellData}
@@ -100,7 +100,7 @@ class MuiVirtualizedTable extends PureComponent {
           fontWeight: 'bold',
           borderRight: '1px solid #e0e0e0',
         }}
-        
+
       >
         <span>{label}</span>
       </TableCell>
@@ -223,9 +223,10 @@ export function ListPlace() {
               }
             ]}
           />
-
         </TableContainer>
-        <Stack direction="row" justifyContent="end" marginTop={2}>
+        <Stack direction="row" justifyContent="end" marginTop={2} spacing={1}>
+          <Button variant="outlined" href="#"
+            onClick={exportPlaceApi} >Export</Button>
           <FormControl size="small">
             <InputLabel id="demo-simple-select-label">Size</InputLabel>
             <Select
