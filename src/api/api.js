@@ -1,8 +1,8 @@
 import axios from "axios"
 
 export const URLS = {
-    baseURL: 'https://test-place.vimap.vn/',
-    // baseURL: '/',
+    // baseURL: 'https://test-place.vimap.vn/',
+    baseURL: '/',
     signIn: 'api/app/login-token-result/login-get-token',
     signUp: 'api/account/register',
     placeTypes: 'api/app/place-type',
@@ -26,7 +26,6 @@ export const getApi = (config) => {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('TOKEN_BEARER')}`,
-            'RequestVerificationToken': getCookie('XSRF-TOKEN'),
         },
         responseType: config?.responseType,
     });
@@ -106,7 +105,6 @@ export const fetchPlaceNamesByStatusApi = async (parameters = { filter: '', sort
 export const updatePlaceNameStatusApi = async (id, statusType) => {
     const api = getApi();
     const response = await api.put(`${URLS.place}/${id}?statusType=${statusType}`);
-    console.log('data...........', response.data);
     return response.data;
 }
 
@@ -115,9 +113,6 @@ export const exportPlaceApi = async () => {
     const api = getApi({ responseType: 'blob' });
     let anchor = document.createElement("a");
     document.body.appendChild(anchor);
-
-    let headers = new Headers();
-    headers.append('Authorization', 'Bearer MY-TOKEN');
 
     api.post(URLS.exportPlace)
         .then(response => {
@@ -145,3 +140,35 @@ function getCookie(cname) {
     }
     return "";
 }
+
+
+// // userw1
+// var token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjU1QTRDM0EzNTAyQzdBRTNGQjIzQTVGNkI3NjNGNjg2IiwidHlwIjoiYXQrand0In0.eyJuYmYiOjE2NjAxNjI3NDcsImV4cCI6MTY5MTY5ODc0NywiaXNzIjoiaHR0cHM6Ly90ZXN0LXBsYWNlLnZpbWFwLnZuIiwiYXVkIjoiUGxhY2VBcHAiLCJjbGllbnRfaWQiOiJQbGFjZUFwcF9BcHAiLCJzdWIiOiI4MTUyNzE0MS0xNTkxLTAzOGUtMGE0MC0zYTA1OTI0M2RlMWUiLCJhdXRoX3RpbWUiOjE2NjAxNjI3NDYsImlkcCI6ImxvY2FsIiwicGhvbmVfbnVtYmVyX3ZlcmlmaWVkIjoiRmFsc2UiLCJlbWFpbCI6InVzZXJ3MUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6IkZhbHNlIiwibmFtZSI6InVzZXJ3MSIsImlhdCI6MTY2MDE2Mjc0Nywic2NvcGUiOlsiUGxhY2VBcHAiXSwiYW1yIjpbInB3ZCJdfQ.K1qNYSb6bAMSeVgszjs8rt-rhlIcq6o6tUcPYKgRFYkGEr5Dg_-pVDsV4MFo99mwxaN1EAU-lBC0p7vbkxaVGMx8lv0L1Q_b3kMfT9IaC1ZLvsiG7hZluF76kNO5giLVocBLDALPeAafXB26xZOFu0W3IlnX8dqhELavGwN8cjwXdp3MTAxFWPlG0lKAvhc7DWk0LQTYfj3feJuRbxG6-YCDtUIhMIOcUj1EcTNv6knCW5hXpPO5xw9xQ4iEyhAvQ2ng0XaRDxRyKwKBDo86mBnrFApU6CtLPOod_-_-XQ7NtAWxv3nYifOZ6Cuc2I4qD5ojAsOQzT59oZC4ToJBOQ"
+
+// // admin
+// var token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjU1QTRDM0EzNTAyQzdBRTNGQjIzQTVGNkI3NjNGNjg2IiwidHlwIjoiYXQrand0In0.eyJuYmYiOjE2NTk2Mzk5NDYsImV4cCI6MTY5MTE3NTk0NiwiaXNzIjoiaHR0cHM6Ly90ZXN0LXBsYWNlLnZpbWFwLnZuIiwiYXVkIjoiUGxhY2VBcHAiLCJjbGllbnRfaWQiOiJQbGFjZUFwcF9BcHAiLCJzdWIiOiI1Yzg3MGJjMC03YmMwLTk3YWItNjYxYy0zYTA1NmE1N2IxNTkiLCJhdXRoX3RpbWUiOjE2NTk2Mzk5NDUsImlkcCI6ImxvY2FsIiwicm9sZSI6ImFkbWluIiwicGhvbmVfbnVtYmVyX3ZlcmlmaWVkIjoiRmFsc2UiLCJlbWFpbCI6ImFkbWluQGFicC5pbyIsImVtYWlsX3ZlcmlmaWVkIjoiRmFsc2UiLCJuYW1lIjoiYWRtaW4iLCJpYXQiOjE2NTk2Mzk5NDYsInNjb3BlIjpbIlBsYWNlQXBwIl0sImFtciI6WyJwd2QiXX0.Rsu_qX8RWamIrWp6--KIxQzsrK8A-ihL5B5Mu0VCld_5AiwA8g853kDXjUhqzxKbVVZTty54MrBNtKEunYtvnjELBA1KFRdzNycmxlCsxyzPkpXSY-9QNza5zaWWbDE9WQTeZ2Aj7G0IxuFQNfcRypcVRt5-XkDDzh2YQLIfIXUZ2zlso-OWX90xSsoZaz9-gTtsokw3UQaRXiTWG0pWA_fmQCkL0qlEzrsiWVyjJsduMnee06X1-PBpCoQrsME2OxWujqXTB7kkj4U-yCWlzEa8IyOzJ7y6MYwA2ezzqo34Y5jc08W5ksHhvhcBaEz6jg-xRKLa-_bjH5c1e_YiwA"
+// var response = await fetch('https://test-place.vimap.vn/api/app/place', {
+//     method: 'POST',
+//     mode: 'cors',
+//     credentials: "omit",
+//     headers: {
+//         'Authorization': token,
+//         'Content-Type': 'application/json',
+//         // 'RequestVerificationToken': 'CfDJ8KZl2WckkV9Eje3Mv1Wdhgc1FjhRaOECrlM-2OuSjmdJNW66p5T7cGq7-i8bN1V1AgxiNwOYHMH82g3d9sPC4cSM6Ap9Z38nJbAeGtsVrscyAcwxE-hPGwMLqqM0AT5RpcoqgVNWNWEvE7JKYWEXITmTMyBhxstOHyv7Bm5_BBjEwQdSBLRYYhdNFbA5Pn2NmQ'
+//     },
+//     body: JSON.stringify({
+//         name: "Bến xex",
+//         placeType: "car"
+//     })
+// })
+// response = await response.json();
+
+// console.log(response);
+
+
+// (function (send) {
+//     XMLHttpRequest.prototype.send = function (data) {
+//         this.setRequestHeader(abp.security.antiForgery.tokenHeaderName, abp.security.antiForgery.getToken());
+//         return send.call(this, data);
+//     };
+// })(XMLHttpRequest.prototype.send);

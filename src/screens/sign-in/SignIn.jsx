@@ -58,11 +58,6 @@ export const SignIn = () => {
         return !hasError;
     }
 
-    useEffect(()=> {
-        console.log(rememberMe);
-        console.log(state);
-    }, [rememberMe, state])
-
     async function signInSubmit() {
         if (validate()) {
             const { data, error } = await signIn({
