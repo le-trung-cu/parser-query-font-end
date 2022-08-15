@@ -151,9 +151,9 @@ class MuiVirtualizedTable extends PureComponent {
                 >
                     <Stack direction="row" spacing={1} alignItems="center">
                         <span>{label}</span>
-                        <Chip style={{ backgroundColor: statusType === 0?'#ffc46b' : '#cc7a00', color: '#ffffff' }} label="Pending" onClick={() => chipClickHandler(0)} variant={statusType === 0 ? 'filled' : 'outlined'} />
-                        <Chip style={{ backgroundColor: statusType === 1? '#69f669': '#008000', color: '#ffffff' }} label="Approval" onClick={() => chipClickHandler(1)} variant={statusType === 1 ? 'filled' : 'outlined'} />
-                        <Chip style={{ backgroundColor: statusType === 2? '#ff6b6b': '#cc0000', color: '#ffffff' }} label="Discard" onClick={() => chipClickHandler(2)} variant={statusType === 2 ? 'filled' : 'outlined'} />
+                        <Chip style={{ backgroundColor: statusType === 0?'#ffc46b' : '#a0a0a0', color: '#ffffff' }} label="Pending" onClick={() => chipClickHandler(0)} variant={statusType === 0 ? 'filled' : 'outlined'} />
+                        <Chip style={{ backgroundColor: statusType === 1? '#69f669': '#a0a0a0', color: '#ffffff' }} label="Approval" onClick={() => chipClickHandler(1)} variant={statusType === 1 ? 'filled' : 'outlined'} />
+                        <Chip style={{ backgroundColor: statusType === 2? '#ff6b6b': '#a0a0a0', color: '#ffffff' }} label="Discard" onClick={() => chipClickHandler(2)} variant={statusType === 2 ? 'filled' : 'outlined'} />
                     </Stack>
                 </TableCell>
             );
@@ -305,7 +305,6 @@ function useFetchPlaceNames() {
     }, [parameters, data, status])
 
     const updatedPlaceNameStatus = (updatePlace) => {
-        console.log('updatePlace............', updatePlace);
         setData(current => ({
             ...current,
             placeNames: { ...current.placeNames, [updatePlace.id]: updatePlace }
@@ -421,7 +420,7 @@ export function ReviewPlace() {
                                     id="demo-simple-select"
                                     value={parameters.pageSize}
                                     label="Size"
-                                    onChange={(e) => setParameters((current) => ({ ...current, pageSize: e.target.value }))}>
+                                    onChange={(e) => setParameters((current) => ({ ...current, currentPage: 1, pageSize: e.target.value }))}>
                                     <MenuItem value={5}>5</MenuItem>
                                     <MenuItem value={20}>20</MenuItem>
                                     <MenuItem value={50}>50</MenuItem>

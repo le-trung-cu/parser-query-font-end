@@ -19,7 +19,6 @@ export async function getPlaceApi (params = {filter : '', sorting: '', skipCount
  export async function changeStatusApi({status, id}){
     const api = getApi();
     const response = await api.put(`app/place/${id}?statusType=${status}`);
-    console.log(response);
     return {
         id: response.data.id,
         status: response.data.status,
