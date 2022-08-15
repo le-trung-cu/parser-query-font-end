@@ -30,8 +30,6 @@ export const useApi = (fn) => {
             setData(data)
             setStatus(SUCCESS);
         } catch (error) {
-            console.log('error 1', error);
-            console.log('error 2', error.response?.data?.error);
             setStatus(ERROR);
             setError({ ...error.response?.data?.error});
         }
